@@ -20,14 +20,17 @@ export function startMatchingEngine(io: Server) {
     return;
   }
 
-  console.log("[MatchingEngine] 🚀 Khởi động mock matching engine (interval: 2s)");
+  console.log("[MatchingEngine] 🚀 Khởi động matching engine (P2P + Mock, interval: 2s)");
 
   engineInterval = setInterval(async () => {
     try {
-      // Lấy tất cả lệnh đang chờ khớp
+      // Bước 1: P2P matching — ưu tiên khớp lệnh giữa các users với nhau
+      await runP2PMatching(io);
+
+      // Bước 2: Mock matching — khớp lệnh còn lại vs giá thị trường từ cache
       const pendingOrders = await Order.find({
         status: { $in: ["pending", "partial"] },
-      }).sort({ createdAt: 1 }); // xử lý các lệnh cũ nhất -> mới nhất
+      }).sort({ createdAt: 1 });
 
       if (pendingOrders.length === 0) return;
 
@@ -42,6 +45,164 @@ export function startMatchingEngine(io: Server) {
   }, 2000);
 }
 
+// ====================== P2P MATCHING ======================
+// Duyệt tất cả lệnh LO pending/partial, nhóm theo symbol, rồi khớp BUY vs SELL giữa 2 users khác nhau
+async function runP2PMatching(io: Server) {
+  const allPending = await Order.find({
+    orderType: "LO",
+    status: { $in: ["pending", "partial"] },
+  }).sort({ createdAt: 1 });
+
+  if (allPending.length === 0) return;
+
+  // Nhóm theo "exchange:symbol"
+  const grouped: Record<string, { buys: IOrder[]; sells: IOrder[] }> = {};
+  for (const order of allPending) {
+    const key = `${order.exchange}:${order.symbol}`;
+    if (!grouped[key]) grouped[key] = { buys: [], sells: [] };
+    if (order.side === "buy") grouped[key].buys.push(order);
+    else grouped[key].sells.push(order);
+  }
+
+  for (const key of Object.keys(grouped)) {
+    const { buys, sells } = grouped[key];
+    if (buys.length === 0 || sells.length === 0) continue;
+
+    // Price-time priority: mua giá cao nhất trước, bán giá thấp nhất trước, cùng giá thì lệnh cũ hơn ưu tiên
+    buys.sort((a, b) => b.price - a.price || a.createdAt.getTime() - b.createdAt.getTime());
+    sells.sort((a, b) => a.price - b.price || a.createdAt.getTime() - b.createdAt.getTime());
+
+    let bi = 0; //con trỏ lệnh mua
+    let si = 0; //con trỏ lệnh bán
+
+    while (bi < buys.length && si < sells.length) {
+      const buy = buys[bi];
+      const sell = sells[si];
+
+      // Không khớp lệnh cùng 1 user (chống self-dealing)
+      if (buy.userId.toString() === sell.userId.toString()) {
+        si++;
+        continue;
+      }
+
+      // Điều kiện khớp: giá mua >= giá bán
+      if (buy.price < sell.price) break;
+
+      // Giá khớp = giá của lệnh được đặt trước (passive order price priority)
+      const matchedPrice = buy.createdAt <= sell.createdAt ? buy.price : sell.price;
+
+      const buyRemaining = buy.quantity - buy.filledQuantity;
+      const sellRemaining = sell.quantity - sell.filledQuantity;
+      const matchedQty = Math.min(buyRemaining, sellRemaining);
+
+      await matchP2P(buy, sell, matchedPrice, matchedQty, io);
+
+      // matchP2P đã cập nhật filledQuantity trực tiếp trên object (pass by reference)
+      if (buy.filledQuantity >= buy.quantity) bi++;
+      if (sell.filledQuantity >= sell.quantity) si++;
+    }
+  }
+}
+
+// Thực hiện khớp p2p giữa 1 lệnh mua và 1 lệnh bán — cập nhật tài sản 2 bên
+async function matchP2P(buyOrder: IOrder, sellOrder: IOrder, matchedPrice: number, matchedQty: number, io: Server) {
+  const matchedValue = matchedPrice * matchedQty;
+
+  // --- Cập nhật trạng thái 2 lệnh ---
+  const isFullBuy = buyOrder.filledQuantity + matchedQty >= buyOrder.quantity;
+  const isFullSell = sellOrder.filledQuantity + matchedQty >= sellOrder.quantity;
+  const now = new Date();
+
+  buyOrder.filledQuantity += matchedQty;
+  buyOrder.status = isFullBuy ? "matched" : "partial";
+  buyOrder.matchedPrice = matchedPrice;
+  buyOrder.matchedAt = now;
+  await buyOrder.save();
+
+  sellOrder.filledQuantity += matchedQty;
+  sellOrder.status = isFullSell ? "matched" : "partial";
+  sellOrder.matchedPrice = matchedPrice;
+  sellOrder.matchedAt = now;
+  await sellOrder.save();
+
+  // --- Xử lý tài sản bên MUA ---
+  // Giải phóng phần locked đúng với matchedQty (phần còn lại vẫn locked cho lần khớp sau)
+  const buyUserId = buyOrder.userId;
+  const lockPrice = buyOrder.price;
+  const lockedFee = Math.ceil(lockPrice * matchedQty * FEE_RATE);
+  const lockedAmount = lockPrice * matchedQty + lockedFee;
+
+  const actualFee = Math.ceil(matchedPrice * matchedQty * FEE_RATE);
+  const actualDeducted = matchedPrice * matchedQty + actualFee;
+  const refund = lockedAmount - actualDeducted; // hoàn lại nếu giá khớp thấp hơn giá đặt
+
+  await Account.updateOne({ userId: buyUserId }, { $inc: { locked: -lockedAmount, available: refund } });
+
+  const buyHolding = await Holding.findOne({ userId: buyUserId, symbol: buyOrder.symbol });
+  if (buyHolding) {
+    const totalQty = buyHolding.available + matchedQty;
+    const totalCost = buyHolding.avgPrice * buyHolding.available + matchedPrice * matchedQty;
+    buyHolding.avgPrice = totalQty > 0 ? Math.round(totalCost / totalQty) : 0;
+    buyHolding.available += matchedQty;
+    await buyHolding.save();
+  } else {
+    await Holding.create({
+      userId: buyUserId,
+      symbol: buyOrder.symbol,
+      available: matchedQty,
+      locked: 0,
+      avgPrice: matchedPrice,
+    });
+  }
+
+  // --- Xử lý tài sản bên BÁN ---
+  const sellUserId = sellOrder.userId;
+  const sellFee = Math.ceil(matchedValue * FEE_RATE);
+  const netReceived = matchedValue - sellFee;
+
+  await Holding.updateOne({ userId: sellUserId, symbol: sellOrder.symbol }, { $inc: { locked: -matchedQty } });
+  await Account.updateOne({ userId: sellUserId }, { $inc: { available: netReceived } });
+
+  // --- Cập nhật bảng giá MongoDB & push delta qua socket ---
+  const instr = await Instrument.findOne({ symbol: buyOrder.symbol }).lean();
+  if (instr) {
+    const newTotalTrading = (Number(instr.totalTrading) || 0) + matchedQty;
+    const ref = Number(instr.reference) || 0;
+    const updated: Record<string, unknown> = {
+      closePrice: matchedPrice,
+      totalTrading: newTotalTrading,
+      change: ref ? matchedPrice - ref : 0,
+      changePercent: ref ? ((matchedPrice - ref) / ref) * 100 : 0,
+    };
+    await Instrument.updateOne({ symbol: buyOrder.symbol }, { $set: updated });
+    markInstrumentChanged(buyOrder.exchange, buyOrder.symbol, updated);
+  }
+
+  console.log(
+    `[P2P] ✅ KHỚP P2P — ${buyOrder.symbol} | orderId MUA: ${buyOrder._id} vs BÁN: ${sellOrder._id} | ` +
+      `giá: ${matchedPrice} | KL: ${matchedQty}`,
+  );
+
+  // Emit socket event cho cả 2 users
+  for (const order of [buyOrder, sellOrder]) {
+    io.emit("order_update", {
+      orderId: order._id,
+      userId: order.userId.toString(),
+      symbol: order.symbol,
+      exchange: order.exchange,
+      side: order.side,
+      orderType: order.orderType,
+      price: order.price,
+      quantity: order.quantity,
+      filledQuantity: order.filledQuantity,
+      status: order.status,
+      matchedPrice: order.matchedPrice,
+      matchedAt: order.matchedAt,
+    });
+  }
+}
+
+// ====================== MOCK MATCHING ======================
 // Thử khớp 1 lệnh dựa trên giá realtime từ cache
 async function tryMatchOrder(order: IOrder, cache: Record<string, Map<string, Record<string, unknown>>>, io: Server) {
   const exchangeData = cache[order.exchange];

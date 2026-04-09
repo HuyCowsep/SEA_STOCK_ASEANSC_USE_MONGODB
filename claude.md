@@ -580,3 +580,27 @@ _Cập nhật lần cuối: 03/04/2026_
 - Giao diện đã được cập nhật để hiển thị số dư tài khoản một cách trực quan và rõ ràng hơn. Việc này giúp người dùng dễ dàng nắm bắt tình trạng tài chính hiện tại, có thể thấy biến động số dư ngay khi khớp lệnh BUY/SELL
 
 _Cập nhật lần cuối: 07/04/2026_
+
+## 11. Cập nhật bổ sung tính năng P2P
+
+1. runP2PMatching(io) — chạy trước mock matching mỗi 2 giây
+
+- Lấy tất cả lệnh LO đang pending/partial
+- Nhóm theo exchange:symbol (ví dụ: HOSE:AAA)
+- Với mỗi nhóm, sort lệnh mua theo giá cao → thấp, lệnh bán theo giá thấp → cao, cùng giá thì lệnh cũ hơn ưu tiên (price-time priority)
+- Dùng 2 con trỏ bi, si duyệt qua từng cặp:
+  - Nếu cùng user → skip (chống self-dealing)
+  - Nếu giá mua < giá bán → break (không còn cặp nào khớp nữa)
+  - Nếu khớp được → gọi matchP2P
+
+2. matchP2P(...) — xử lý tài sản 2 bên
+
+- Giá khớp = giá của lệnh đặt trước (passive order)
+- Bên MUA: unlock locked, hoàn dư nếu giá khớp thấp hơn giá đặt, cộng holding
+- Bên BÁN: trừ locked cổ phiếu, cộng tiền sau phí vào available
+- Cập nhật closePrice trong MongoDB + push delta qua socket → FE flash giá
+- Emit order_update cho cả 2 users
+
+3. Thứ tự trong interval
+   ① runP2PMatching() ← ưu tiên người vs người
+   ② tryMatchOrder() ← lệnh còn lại mới so vs giá cache

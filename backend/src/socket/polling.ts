@@ -9,13 +9,6 @@
 //     → io.on("connection")          ← khi FE connect, gửi snapshot từ cache
 //     → markInstrumentChanged()      ← matchingEngine gọi sau khi khớp lệnh
 //     → broadcastDeltaImmediately()  ← emit delta xuống FE → FE nháy flash cell
-//
-// LUỒNG CŨ (ASEAN — đã comment bên dưới, xem để học):
-//   startPolling(io)
-//     → loadInitialData()            ← gọi ASEAN REST lấy toàn bộ mã
-//     → connectToAsean(callbacks)    ← mở WebSocket tới ASEAN server
-//     → onInstrumentUpdate(data)     ← nhận event "i", merge cache, emit delta
-//     → onIndexUpdate(data)          ← nhận event "idx", emit indexsnaps_data
 // ============================================================
 
 import axios from "axios";
