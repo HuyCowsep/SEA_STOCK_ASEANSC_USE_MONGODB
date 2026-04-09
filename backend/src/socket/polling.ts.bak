@@ -1,0 +1,349 @@
+// backend/src/socket/polling.ts
+// Backend kết nối ASEAN WebSocket → merge cache → broadcast DELTA cho frontend
+
+import axios from "axios";
+import { Server, Socket } from "socket.io";
+import { connectToAsean, InstrumentUpdateData } from "./aseanSocket";
+
+const BASE_URL = "https://seastock.aseansc.com.vn";
+const EXCHANGES = ["HOSE", "HNX", "UPCOM"] as const;
+const VALID_ROOMS = ["HOSE", "HNX", "UPCOM", "30", "HNX30"] as const;
+const CHART_CODES = ["HOSE", "30", "HNX", "HNX30", "UPCOM"];
+
+// ====================== FIELD MAPPING ======================
+// Mapping từ field name của ASEAN socket event "i" → field name trong cache
+// (xác nhận từ log thực tế ngày 02/04/2026)
+const WS_FIELD_MAP: Record<string, string> = {
+  SB: "symbol",
+  CP: "closePrice",
+  CV: "closeVol",
+  CH: "change",
+  CHP: "changePercent",
+  TT: "totalTrading",
+  RE: "reference",
+  CE: "ceiling",
+  FL: "floor",
+  HI: "high",
+  LO: "low",
+  AP: "averagePrice",
+  FB: "foreignBuy",
+  FS: "foreignSell",
+  FR: "foreignRemain",
+  // Bên mua — ASEAN thực tế gửi B1/B2/B3 (giá) và V1/V2/V3 (khối lượng)
+  B1: "bidPrice1",
+  V1: "bidVol1",
+  B2: "bidPrice2",
+  V2: "bidVol2",
+  B3: "bidPrice3",
+  V3: "bidVol3",
+  // Bên bán — ASEAN thực tế gửi S1/S2/S3 (giá) và U1/U2/U3 (khối lượng)
+  S1: "offerPrice1",
+  U1: "offerVol1",
+  S2: "offerPrice2",
+  U2: "offerVol2",
+  S3: "offerPrice3",
+  U3: "offerVol3",
+  // Dư mua/bán
+  TB: "TOTAL_BID_QTTY",
+  TO: "TOTAL_OFFER_QTTY",
+  // Giao dịch thỏa thuận
+  TV: "totalTradingValue",
+  OP: "open",
+  PMP: "PT_MATCH_PRICE",
+  PMQ: "PT_MATCH_QTTY",
+  PTQ: "PT_TOTAL_TRADED_QTTY",
+  PTV: "PT_TOTAL_TRADED_VALUE",
+  P1: "priceOne",
+  P2: "priceTwo",
+};
+
+// ====================== CACHE ======================
+// Full instrument data per exchange
+const exchangeCache: Record<string, Map<string, Record<string, unknown>>> = {
+  HOSE: new Map(),
+  HNX: new Map(),
+  UPCOM: new Map(),
+};
+
+// Getter cho matchingEngine và orderController truy cập giá realtime
+export function getExchangeCache() {
+  return exchangeCache;
+}
+
+// VN30/HNX30 symbol lists
+let vn30Symbols: string[] = [];
+let hnx30Symbols: string[] = [];
+
+// Thêm biến cache cho index
+let indexCache: Record<string, any> = {
+  HOSE: {},
+  "30": {},
+  HNX: {},
+  HNX30: {},
+  UPCOM: {},
+};
+
+// Delta tracking: instruments đã thay đổi kể từ lần broadcast trước
+const changedInstruments: Record<string, Map<string, Record<string, unknown>>> = {
+  HOSE: new Map(),
+  HNX: new Map(),
+  UPCOM: new Map(),
+};
+
+// Cached data cho index/time/chart
+let latestServerTime: unknown = null;
+let latestChartData: Record<string, unknown> = {};
+
+let ioRef: Server | null = null;
+
+// ====================== INITIAL REST LOAD ======================
+
+async function loadInitialData() {
+  // Load danh sách mã chứng khoán VN30/HNX30
+  try {
+    const [vn30Res, hnx30Res] = await Promise.all([
+      axios.get(`${BASE_URL}/datafeed/instruments/30`),
+      axios.get(`${BASE_URL}/datafeed/instruments/HNX30`),
+    ]);
+    if (vn30Res.data.s === "ok" && Array.isArray(vn30Res.data.d)) vn30Symbols = vn30Res.data.d;
+    if (hnx30Res.data.s === "ok" && Array.isArray(hnx30Res.data.d)) hnx30Symbols = hnx30Res.data.d;
+    console.log(`  ✅ VN30: ${vn30Symbols.length} mã, HNX30: ${hnx30Symbols.length} mã`);
+  } catch (err) {
+    console.error("  ❌ Lỗi load VN30/HNX30 symbols:", err);
+  }
+
+  // Load tất cả cổ phiếu cho từng sàn
+  for (const exchange of EXCHANGES) {
+    try {
+      const res = await axios.get(`${BASE_URL}/datafeed/instruments`, { params: { exchange } });
+      if (res.data.s === "ok" && Array.isArray(res.data.d)) {
+        const cache = new Map<string, Record<string, unknown>>();
+        for (const inst of res.data.d) {
+          if (inst.symbol) cache.set(inst.symbol, inst);
+        }
+        exchangeCache[exchange] = cache;
+        console.log(`  ✅ ${exchange}: ${cache.size} mã cổ phiếu`);
+      }
+    } catch (err) {
+      console.error(`  ❌ Lỗi load ${exchange}:`, err);
+    }
+  }
+}
+
+// ====================== BROADCAST REALTIME ======================
+function broadcastDeltaImmediately() {
+  if (!ioRef) return;
+  const roomsToUpdate = new Set<string>();
+
+  if (changedInstruments["HOSE"].size > 0) {
+    roomsToUpdate.add("HOSE");
+    roomsToUpdate.add("30");
+  }
+  if (changedInstruments["HNX"].size > 0) {
+    roomsToUpdate.add("HNX");
+    roomsToUpdate.add("HNX30");
+  }
+  if (changedInstruments["UPCOM"].size > 0) {
+    roomsToUpdate.add("UPCOM");
+  }
+
+  for (const room of roomsToUpdate) {
+    const data = buildDelta(room);
+    if (!data) continue;
+    ioRef.to(`exchange:${room}`).emit("instruments_data", data);
+  }
+
+  for (const exchange of EXCHANGES) {
+    changedInstruments[exchange].clear();
+  }
+}
+
+// ====================== WEBSOCKET UPDATE HANDLER ======================
+function handleInstrumentUpdate(data: InstrumentUpdateData) {
+  if (data.a !== "u" || !Array.isArray(data.d)) return;
+
+  for (const item of data.d) {
+    const exchange = item.EX as string;
+    const symbol = item.SB as string;
+    if (!exchange || !symbol) continue;
+
+    const cache = exchangeCache[exchange];
+    if (!cache) continue;
+
+    const existing = cache.get(symbol);
+    if (!existing) continue;
+
+    for (const [wsField, ourField] of Object.entries(WS_FIELD_MAP)) {
+      if (wsField in item && wsField !== "SB") {
+        const val = item[wsField];
+        existing[ourField] = typeof val === "string" ? parseFloat(val as string) || val : val;
+      }
+    }
+
+    if (changedInstruments[exchange]) {
+      changedInstruments[exchange].set(symbol, existing);
+    }
+  }
+  broadcastDeltaImmediately();
+}
+
+// ====================== BUILD RESPONSE ======================
+// Full snapshot — gửi khi client mới join vào room
+function buildFullSnapshot(room: string): { s: string; d: Record<string, unknown>[]; _serverEmitTime: number; _type: "snapshot" } | null {
+  const timestamp = Date.now();
+
+  if (room === "30") {
+    const hoseCache = exchangeCache["HOSE"];
+    const instruments = vn30Symbols.map((sym) => hoseCache.get(sym)).filter(Boolean) as Record<string, unknown>[];
+    return instruments.length > 0 ? { s: "ok", d: instruments, _serverEmitTime: timestamp, _type: "snapshot" } : null;
+  } else if (room === "HNX30") {
+    const hnxCache = exchangeCache["HNX"];
+    const instruments = hnx30Symbols.map((sym) => hnxCache.get(sym)).filter(Boolean) as Record<string, unknown>[];
+    return instruments.length > 0 ? { s: "ok", d: instruments, _serverEmitTime: timestamp, _type: "snapshot" } : null;
+  } else {
+    const cache = exchangeCache[room];
+    if (!cache || cache.size === 0) return null;
+    return { s: "ok", d: Array.from(cache.values()), _serverEmitTime: timestamp, _type: "snapshot" };
+  }
+}
+
+// Delta — chỉ gửi instruments đã thay đổi
+function buildDelta(room: string): { s: string; d: Record<string, unknown>[]; _serverEmitTime: number; _type: "delta" } | null {
+  const timestamp = Date.now();
+  let deltaItems: Record<string, unknown>[] = [];
+
+  if (room === "30") {
+    const vn30Set = new Set(vn30Symbols);
+    deltaItems = Array.from(changedInstruments["HOSE"].values()).filter((inst) => vn30Set.has(inst.symbol as string));
+  } else if (room === "HNX30") {
+    const hnx30Set = new Set(hnx30Symbols);
+    deltaItems = Array.from(changedInstruments["HNX"].values()).filter((inst) => hnx30Set.has(inst.symbol as string));
+  } else {
+    const delta = changedInstruments[room];
+    if (!delta) return null;
+    deltaItems = Array.from(delta.values());
+  }
+
+  if (deltaItems.length === 0) return null;
+  return { s: "ok", d: deltaItems, _serverEmitTime: timestamp, _type: "delta" };
+}
+
+// ====================== START ======================
+export function startPolling(io: Server) {
+  ioRef = io;
+
+  // === Bước 1: Load dữ liệu ban đầu từ REST ===
+  loadInitialData().then(() => {
+    console.log("-> Dữ liệu ban đầu đã tải xong");
+  });
+
+  // === Bước 2: Kết nối ASEAN WebSocket (realtime data) ===
+  connectToAsean({
+    onInstrumentUpdate: handleInstrumentUpdate, //dữ liệu này là của tất cả cổ phiếu
+    onIndexUpdate: (data: any) => {
+      // Dữ liệu chỉ số thị trường (VN-Index, HNX-Index, ...)
+      if (!data?.a || data.a !== "u" || !Array.isArray(data.d)) return;
+
+      data.d.forEach((item: any) => {
+        const marketCode = item.MC || item.marketCode;
+        if (!marketCode) return;
+
+        // Merge cache
+        indexCache[marketCode] = {
+          ...indexCache[marketCode],
+          ...item,
+        };
+      });
+
+      const rawIndexData = Object.values(indexCache);
+
+      const mappedData = rawIndexData
+        .filter((item: any) => item.MC)
+        .map((item: any) => ({
+          marketCode: item.MC,
+          marketIndex: item.MI,
+          indexChange: item.ICH,
+          indexPercentChange: item.IPC,
+          totalVolume: item.TV,
+          totalValue: item.TVA,
+          time: item.IT,
+          tradingDate: item.TD,
+          status: item.MS,
+          indexColor: parseFloat(item.ICH) > 0 ? "up" : parseFloat(item.ICH) < 0 ? "down" : "ref",
+
+          advances: parseInt(item.ADV) || 0, // số mã tăng giá (▲)
+          advancesVolume: parseFloat(item.AV) || 0, // khối lượng mã tăng (không phải số mã trần)
+          noChange: parseInt(item.NC) || 0, // số mã đứng giá (■)
+          noChangeVolume: parseFloat(item.NCV) || 0, // khối lượng mã không đổi
+          declines: parseInt(item.DE) || 0, // số mã giảm giá (▼)
+          declinesVolume: parseFloat(item.DV) || 0, // khối lượng mã giảm (không phải số mã sàn)
+
+          // Giao dịch thỏa thuận
+          ptTotalTrading: parseFloat(item.PTT) || 0,
+          ptTotalValue: parseFloat(item.PTV) || 0,
+        }));
+
+      io.emit("indexsnaps_data", {
+        s: "ok",
+        d: mappedData,
+      });
+    },
+
+    onConnect: () => {
+      console.log("[ASEAN_WS] Đã kết nối");
+    },
+    onDisconnect: (reason) => {
+      console.log("[ASEAN_WS] Đã ngắt kết nối:", reason);
+    },
+  }).catch((err) => {
+    console.error("❌ ConnectToAsean thất bại:", err);
+  });
+
+  // === Bước 3: Socket.IO handler cho frontend clients ===
+  io.on("connection", (socket: Socket) => {
+    console.log("[Socket] Client đã kết nối | id:", socket.id);
+    // Gửi cached data ngay cho client mới
+    if (latestServerTime) socket.emit("server_time", latestServerTime);
+    if (Object.keys(latestChartData).length > 0) socket.emit("chartinday_data", latestChartData);
+
+    // Client subscribe vào exchange room — gửi FULL SNAPSHOT 1 lần
+    socket.on("subscribe_exchange", (exchange: string) => {
+      // đã có log exchange
+      if (!VALID_ROOMS.includes(exchange as (typeof VALID_ROOMS)[number])) return;
+      VALID_ROOMS.forEach((ex) => socket.leave(`exchange:${ex}`)); // Rời tất cả exchange rooms cũ
+      socket.join(`exchange:${exchange}`); // Join room mới, đã có log
+      // Gửi FULL SNAPSHOT ngay lập tức (chỉ lần này)
+      const data = buildFullSnapshot(exchange);
+      if (data) socket.emit("instruments_data", data);
+    });
+
+    socket.on("disconnect", () => {
+      console.log("[Socket] Client đã ngắt kết nối | id:", socket.id);
+    });
+    socket.on("error", (err: unknown) => {
+      console.error("[Socket] Có lỗi:", err);
+    });
+  });
+
+  // Polling cho biểu đồ ChartMini vì socket không trả dữ liệu cho biểu đồ
+  setInterval(async () => {
+    try {
+      const results = await Promise.all(
+        CHART_CODES.map(async (code) => {
+          const res = await axios.get(`${BASE_URL}/datafeed/chartinday/${code}`);
+          return { code, data: res.data };
+        }),
+      );
+
+      const chartData: Record<string, unknown> = {};
+      results.forEach(({ code, data }) => {
+        chartData[code] = data;
+      });
+
+      latestChartData = chartData;
+      io.emit("chartinday_data", chartData);
+    } catch (err) {
+      console.error("Lỗi polling chartinday:", err);
+    }
+  }, 5000);
+}

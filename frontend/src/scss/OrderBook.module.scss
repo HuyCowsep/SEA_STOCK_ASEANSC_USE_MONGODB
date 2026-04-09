@@ -1,0 +1,317 @@
+// OrderBook.module.scss - Panel sổ lệnh nằm dưới StockTable
+
+.orderBook {
+  flex-shrink: 0; // Không cho OrderBook co lại khi chiều cao bị hạn chế
+  background: #111827;
+  border-top: 1px solid #374151;
+  display: flex;
+  flex-direction: column;
+}
+
+// Header bar với title + toggle
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: #1f2937;
+  border-bottom: 1px solid #374151;
+  flex-shrink: 0; // Không cho header co lại khi chiều cao bị hạn chế
+  cursor: default;
+  user-select: none;
+}
+
+.headerTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #e5e7eb;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.toggleBtn {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition:
+    background 0.15s,
+    color 0.15s;
+
+  &:hover {
+    background: #374151;
+    color: #e5e7eb;
+  }
+}
+
+// Tabs lọc trạng thái
+.filterTabs {
+  display: flex;
+  gap: 0;
+  background: #0f172a;
+  padding: 0 8px;
+  border-bottom: 1px solid #1f2937;
+  flex-shrink: 0;
+}
+
+.filterTabTitleName {
+  padding: 6px 12px;
+  font-size: 13px;
+  color: #bcc1cc;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+
+  &:hover {
+    color: #d1d5db;
+  }
+}
+
+.filterTabActive {
+  color: #60a5fa;
+  border-bottom-color: #60a5fa;
+  font-weight: 600;
+}
+
+// Khu vực co giãn bên dưới header (filter tabs + order list)
+.expandableArea {
+  max-height: 230px; // cố định để không bị overflow viewport
+  overflow: hidden;
+  opacity: 1;
+  transition:
+    max-height 0.32s ease,
+    opacity 0.22s ease;
+}
+
+.expandableAreaCollapsed {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.expandableInner {
+  height: 230px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+// Danh sách lệnh (scrollable)
+.orderList {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #0f172a;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 2px;
+  }
+}
+
+// Header dòng tiêu đề cột
+.listHeader {
+  display: grid;
+  grid-template-columns: 80px 80px 60px 1fr 1fr 1fr 110px 110px;
+  padding: 4px 10px;
+  background: #0f172a;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.colHeader {
+  font-size: 11px;
+  color: #bcc1cc;
+  font-weight: 500;
+  text-align: right;
+
+  &:first-child {
+    //cột SIDE canh trái
+    text-align: left;
+  }
+  &:nth-child(2) {
+    //Cột MÃ canh trái
+    text-align: left;
+  }
+  &:nth-child(3) {
+    //Cột LOẠI LỆNH canh giữa
+    text-align: center;
+  }
+}
+
+// Dòng lệnh
+.orderRow {
+  display: grid;
+  grid-template-columns: 80px 80px 60px 1fr 1fr 1fr 110px 110px;
+  padding: 5px 10px;
+  align-items: center;
+  transition: background 0.1s;
+
+  &:hover {
+    background: #1f2937;
+  }
+}
+
+// Badge MUA / BÁN
+.sideBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 3px;
+  padding: 2px 6px;
+  letter-spacing: 0.03em;
+  margin: 5px 10px 5px 0px;
+}
+
+.sideBadgeBuy {
+  background: #14532d;
+  color: #4ade80;
+  border: 1px solid #16a34a;
+}
+
+.sideBadgeSell {
+  background: #450a0a;
+  color: #f87171;
+  border: 1px solid #dc2626;
+}
+
+// Các ô text trong dòng lệnh
+.cellSymbol {
+  font-size: 12px;
+  font-weight: 700;
+  color: #60a5fa;
+}
+
+.cellType {
+  font-size: 11px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.cellNum {
+  font-size: 11px;
+  color: #d1d5db;
+  text-align: right;
+}
+
+.cellNumDim {
+  font-size: 11px;
+  color: #6b7280;
+  text-align: right;
+}
+
+.cellMatched {
+  font-size: 11px;
+  color: #4ade80;
+  text-align: right;
+  font-weight: 600;
+}
+
+// Badge trạng thái
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 3px;
+  padding: 2px 5px;
+}
+
+.statusPending {
+  background: rgba(251, 191, 36, 0.08);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  margin: 5px 0px 5px 20px;
+}
+
+.statusPartial {
+  background: rgba(59, 130, 246, 0.08);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  margin: 5px 0px 5px 20px;
+}
+
+.statusMatched {
+  background: rgba(34, 197, 94, 0.08);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  margin: 5px 0px 5px 20px;
+}
+
+.statusCancelled {
+  background: #f79d9d; // đỏ rất nhạt
+  color: #b91c1c; // đỏ trầm
+  border: 1px solid #f79d9d;
+  margin: 5px 0px 5px 20px;
+}
+
+// Nút hủy lệnh
+.cancelBtn {
+  background: transparent;
+  border: 1px solid #4b5563; // xám rõ hơn
+  border-radius: 4px;
+  color: #d1d5db; // sáng hơn để nổi trên dark bg
+  font-size: 10px;
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin: 5px 0px 5px 20px;
+
+  &:hover {
+    border-color: #dc2626;
+    color: #fca5a5;
+    background: rgba(220, 38, 38, 0.08);
+  }
+
+  &:active {
+    background: rgba(220, 38, 38, 0.15);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    border-color: #374151;
+    color: #6b7280;
+    background: transparent;
+
+    &:hover {
+      border-color: #374151;
+      color: #6b7280;
+      background: transparent;
+    }
+  }
+}
+
+// Trạng thái rỗng
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  color: #9ca4af;
+  font-size: 15px;
+  font-style: italic;
+}

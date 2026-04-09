@@ -1,0 +1,908 @@
+//StockTable.module.scss
+
+.tableWrapper {
+  width: 100%;
+  flex: 1; /* Chiếm phần còn lại trong vùng data, không đẩy OrderBook ra ngoài viewport */
+  overflow: hidden;
+  background: #0f172a;
+  min-height: 0; /* Giúp flexbox tính toán đúng */
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Header Container - Sticky */
+.headerContainer {
+  background: #0f172a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  padding-right: 6px; /* Bù cho thanh scrollbar của virtualContainer để cột header khớp cột data */
+}
+
+/* Pinned Rows Container - Xuất hiện bên dưới tiêu đề, phía trên danh sách ảo. */
+.pinnedRowsContainer {
+  position: relative;
+  background: #0f172a;
+  max-height: 300px;
+  z-index: 5;
+  padding-right: 6px;
+}
+/* fake border */
+.pinnedRowsContainer::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 6px; /* 👈 chừa 6px bên phải */
+  height: 2px;
+  background: #f0f2f4;
+}
+
+// Header Grid - không border cell nữa, dùng pseudo để vẽ lưới
+.headerGrid {
+  display: grid;
+  position: relative; // để pseudo hoạt động
+  background: #0f172a;
+}
+
+/* Merged cells (span 2 rows) - STT, Mã CK, TC, Trần, Sàn */
+.colPin {
+  grid-row: 1 / 3;
+  text-align: center;
+  font-weight: 600;
+  color: #e5e7eb;
+  border: 1px solid #8a8c92;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  background: #1f2937;
+  display: flex;
+}
+
+.colSymbol {
+  grid-row: 1 / 3;
+  font-weight: 600;
+  color: #e5e7eb;
+  border: 1px solid #8a8c92;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  background: #1f2937;
+  display: flex;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.colTC {
+  grid-row: 1 / 3;
+  text-align: center;
+  font-weight: 600;
+  color: #e5e7eb;
+  border: 1px solid #8a8c92;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  background: #1f2937;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.colCeiling {
+  grid-row: 1 / 3;
+  text-align: center;
+  font-weight: 600;
+  color: #e5e7eb;
+  border: 1px solid #8a8c92;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  background: #1f2937;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.colFloor {
+  grid-row: 1 / 3;
+  text-align: center;
+  font-weight: 600;
+  color: #e5e7eb;
+  border: 1px solid #8a8c92;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  background: #1f2937;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Group headers - span via inline style, row 1 only */
+.groupHeader {
+  grid-row: 1;
+  padding: 6px 4px;
+  text-align: center;
+  font-weight: 600;
+  color: #e5e7eb;
+  border: 1px solid #8a8c92;
+  background: #1f2937;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+/* Tổng KL - span 2 rows (no explicit grid-column, auto-place) */
+.colTotalVolume {
+  grid-row: 1 / 3;
+  padding: 6px 4px;
+  font-weight: 600;
+  color: #e5e7eb;
+  border: 1px solid #8a8c92;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  background: #1f2937;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Tổng GT - span 2 rows */
+.colTotalValue {
+  grid-row: 1 / 3;
+  padding: 6px 4px;
+  font-weight: 600;
+  color: #e5e7eb;
+  border: 1px solid #8a8c92;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  background: #1f2937;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Sàn (Exchange) header - span 2 rows */
+.colExchange {
+  grid-row: 1 / 3;
+  text-align: center;
+  font-weight: 600;
+  color: #e5e7eb;
+  border: 1px solid #8a8c92;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  background: #1f2937;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Dư group header — kept for backward compat, now unused (use .groupHeader) */
+.groupSurplusHeader {
+  grid-column: span 2;
+  grid-row: 1;
+  padding: 6px 4px;
+  text-align: center;
+  font-weight: 600;
+  color: #e5e7eb;
+  border: 1px solid #8a8c92;
+  background: #1f2937;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+/* Giá & ĐTNN group headers — kept for backward compat, now unused (use .groupHeader) */
+.groupPriceHeader {
+  grid-column: span 3;
+  grid-row: 1;
+  padding: 6px 4px;
+  text-align: center;
+  font-weight: 600;
+  color: #e5e7eb;
+  border: 1px solid #8a8c92;
+  background: #1f2937;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.groupForeignHeader {
+  grid-column: span 2;
+  grid-row: 1;
+  text-align: center;
+  font-weight: 600;
+  color: #e5e7eb;
+  border: 1px solid #8a8c92;
+  background: #1f2937;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+/* Sub-headers (row 2) - Auto placement by DOM order */
+.subHeader {
+  grid-row: 2;
+  padding: 3px 4px;
+  text-align: center;
+  font-weight: 500;
+  font-size: 12px;
+  color: white;
+  border: 1px solid #8a8c92;
+  background: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Header/sub-header có thể click để sort */
+.sortable {
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    background: #114dad;
+  }
+}
+
+/* Virtual Container */
+.virtualContainer {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  position: relative;
+  background: #0f172a;
+  padding-bottom: 10px;
+  width: 100%;
+
+  &::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #0f172a;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 3px;
+
+    &:hover {
+      background: #4b5563;
+    }
+  }
+}
+
+// Nền tối hơn cho TC, Trần, Sàn, Khớp lệnh, Giá
+.darkBg {
+  background: #393d45;
+}
+
+.bodyRow {
+  display: grid;
+  border: 1px solid #8a8c92;
+  grid-auto-columns: 0;
+  height: 30px !important;
+  box-sizing: border-box;
+  background: #0f172a;
+  position: relative;
+  gap: 0px;
+  cursor: pointer;
+
+  &:hover {
+    background: #111827;
+    border-bottom: 1px solid #ff0000;
+  }
+
+  &:nth-child(even) {
+    background: rgba(15, 23, 42, 0.5);
+
+    &:hover {
+      background: #111827;
+      border-bottom: 1px solid #ff0000;
+    }
+  }
+
+  > div {
+    padding: 3px 4px;
+    display: flex;
+    justify-content: end;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 12px;
+    border: none;
+  }
+}
+
+/* Cell Styling */
+.cellPin {
+  text-align: center !important;
+  border-right: 1px solid #8a8c92 !important;
+}
+
+.pinButton {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 6px 0px;
+  font-size: 15px;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #ef4444;
+  }
+
+  &.pinned {
+    color: #ef4444;
+    transform: scale(1.35);
+  }
+}
+
+.cellSymbol {
+  border-right: 1px solid #8a8c92 !important;
+  display: flex;
+  justify-content: start !important;
+  align-items: center !important;
+  font-weight: 600;
+  &.up {
+    color: #02f206; // tăng
+  }
+  &.down {
+    color: #ff3b3b; // giảm
+  }
+  &.tc {
+    color: #ffff00; // tham chiếu
+  }
+  &.ceiling {
+    color: #b026ff; // trần
+  }
+  &.floor {
+    color: #3dd9f5; // sàn
+  }
+  &.neutral {
+    color: #e5e7eb;
+  }
+}
+
+.cellPrice {
+  color: #ffffff;
+  font-weight: 500;
+  border-right: 1px solid #8a8c92 !important;
+  display: flex;
+  align-items: center;
+
+  &.up {
+    color: #02f206;
+  }
+
+  &.down {
+    color: #ff3b3b;
+  }
+
+  &.tc {
+    color: #ffff00;
+  }
+
+  &.ceiling {
+    color: #b026ff;
+  }
+
+  &.floor {
+    color: #3dd9f5;
+  }
+}
+
+.cellVolume {
+  color: #9ca3af;
+  font-size: 12px;
+  border-right: 1px solid #8a8c92 !important;
+  display: flex;
+  align-items: center;
+
+  &.up {
+    color: #02f206;
+  }
+
+  &.down {
+    color: #ff3b3b;
+  }
+
+  &.tc {
+    color: #ffff00;
+  }
+
+  &.ceiling {
+    color: #b026ff;
+  }
+
+  &.floor {
+    color: #3dd9f5;
+  }
+
+  &.neutral {
+    color: #9ca3af;
+  }
+}
+
+/* TC - Yellow */
+.cellTC {
+  color: #ffff00;
+  font-weight: 500;
+  border-right: 1px solid #8a8c92 !important;
+  display: flex;
+  align-items: center;
+}
+
+/* Trần (Ceiling) - Purple */
+.cellCeiling {
+  color: #b026ff;
+  font-weight: 500;
+  border-right: 1px solid #8a8c92 !important;
+  display: flex;
+  align-items: center;
+}
+
+/* Sàn (Floor) - Light Cyan */
+.cellFloor {
+  color: #3dd9f5;
+  font-weight: 500;
+  border-right: 1px solid #8a8c92 !important;
+  display: flex;
+  align-items: center;
+}
+
+/* Tổng KL - White */
+.cellTotalVolume {
+  color: #ffffff;
+  font-weight: 500;
+  border-right: 1px solid #8a8c92 !important;
+  display: flex;
+  align-items: center;
+  justify-content: end;
+}
+
+/* Tổng GT - White */
+.cellTotalValue {
+  color: #ffffff;
+  font-weight: 500;
+  border-right: 1px solid #8a8c92 !important;
+  display: flex;
+  align-items: center;
+  justify-content: end;
+}
+
+/* Sàn (Exchange) cell - White */
+.cellExchange {
+  color: #ffffff;
+  font-weight: 500;
+  border-right: 1px solid #8a8c92 !important;
+  display: flex;
+  align-items: center;
+  text-align: left !important;
+}
+
+/* ĐTNN Foreign Buy - White */
+.cellForeignBuy {
+  color: #ffffff;
+  font-weight: 500;
+  border-right: 1px solid #8a8c92 !important;
+  display: flex;
+  justify-content: end;
+  align-items: center;
+}
+
+/* ĐTNN Foreign Sell - White */
+.cellForeignSell {
+  color: #ffffff;
+  font-weight: 500;
+  display: flex;
+  justify-content: end;
+  align-items: center;
+}
+
+/* Dư (Surplus) - White */
+.cellSurplus {
+  color: #ffffff;
+  font-weight: 500;
+  border-right: 1px solid #8a8c92 !important;
+  display: flex;
+  align-items: center;
+}
+
+/* NN Room - White */
+.cellForeignRemain {
+  color: #ffffff;
+  font-weight: 500;
+  border-left: 1px solid #8a8c92 !important;
+  display: flex;
+  align-items: center;
+  justify-content: end;
+}
+
+.cellUp {
+  color: #02f206;
+  font-weight: 500;
+}
+
+.cellDown {
+  color: #ff3b3b;
+  font-weight: 500;
+}
+
+.cell {
+  color: #ffffff;
+  border-right: 1px solid #8a8c92 !important; // kẻ dọc
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  justify-content: end;
+  align-items: center;
+
+  &.up {
+    color: #02f206;
+  }
+
+  &.down {
+    color: #ff3b3b;
+  }
+
+  &.tc {
+    color: #ffff00;
+  }
+
+  &.ceiling {
+    color: #b026ff;
+  }
+
+  &.floor {
+    color: #3dd9f5;
+  }
+
+  &.neutral {
+    color: #ffffff;
+  }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  height: 6px;
+  width: 6px; //chiều rộng của thanh scrollbar dọc là 6px để dễ nhấn giữ và kéo
+}
+
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 3px;
+
+  &:hover {
+    background: #4b5563;
+  }
+}
+
+//hiệu ứng nháy flash khi giá thay đổi
+.flashRow {
+  animation: priceFlash 400ms ease-out;
+}
+
+.flashCell {
+  animation: priceFlash 400ms ease-out;
+}
+
+.flashCellUp {
+  animation: flashUp 1.5s ease-out;
+  color: #fff !important;
+}
+
+.flashCellDown {
+  animation: flashDown 1.5s ease-out;
+  color: #fff !important;
+}
+
+// Flash trần (tím)
+.flashCellCeiling {
+  animation: flashCeiling 1.5s ease-out;
+  color: #fff !important;
+}
+
+// Flash sàn (xanh lơ)
+.flashCellFloor {
+  animation: flashFloor 1.5s ease-out;
+  color: #fff !important;
+}
+
+// Flash tham chiếu (vàng)
+.flashCellTC {
+  animation: flashTC 1.5s ease-out;
+  color: #fff !important;
+}
+
+@keyframes flashUp {
+  0% {
+    background: #2fb000;
+    color: white !important;
+  }
+
+  60% {
+    background: #2fb000;
+    color: white !important;
+  }
+
+  100% {
+    background: transparent;
+    color: inherit;
+  }
+}
+
+@keyframes flashDown {
+  0% {
+    background: #ff0000;
+    color: white !important;
+  }
+
+  60% {
+    background: #ff0000;
+    color: white !important;
+  }
+
+  100% {
+    background: transparent;
+    color: inherit;
+  }
+}
+
+@keyframes flashCeiling {
+  0% {
+    background: #b026ff;
+    color: white !important;
+  }
+
+  60% {
+    background: #b026ff;
+    color: white !important;
+  }
+
+  100% {
+    background: transparent;
+    color: inherit;
+  }
+}
+
+@keyframes flashFloor {
+  0% {
+    background: #3dd9f5;
+    color: white !important;
+  }
+
+  60% {
+    background: #3dd9f5;
+    color: white !important;
+  }
+
+  100% {
+    background: transparent;
+    color: inherit;
+  }
+}
+
+@keyframes flashTC {
+  0% {
+    background: #caca01;
+    color: #000 !important;
+  }
+
+  60% {
+    background: #caca01;
+    color: #000 !important;
+  }
+
+  100% {
+    background: transparent;
+    color: inherit;
+  }
+}
+
+@keyframes priceFlash {
+  0% {
+    background-color: rgba(255, 215, 0, 0.6);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+@keyframes priceFlashUp {
+  0% {
+    background-color: rgba(34, 197, 94, 0.5);
+  } /* xanh */
+  100% {
+    background-color: transparent;
+  }
+}
+
+@keyframes priceFlashDown {
+  0% {
+    background-color: rgba(239, 68, 68, 0.5);
+  } /* đỏ */
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* Responsive */
+@media (max-width: 1440px) {
+  .headerRow1,
+  .headerRow2,
+  .bodyRow {
+    font-size: 12px;
+
+    > div {
+      font-size: 12px;
+    }
+  }
+
+  .cellVolume {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .tableWrapper {
+    padding: 12px;
+  }
+
+  .headerRow1,
+  .headerRow2,
+  .bodyRow {
+    font-size: 12px;
+
+    > div {
+      font-size: 12px;
+    }
+  }
+
+  .cellVolume {
+    font-size: 9px;
+  }
+}
+
+/* Hiệu ứng fade khi sort */
+@keyframes sortFadeAnim {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 0.3;
+    transform: translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sortFade {
+  animation: sortFadeAnim 300ms ease-out;
+}
+
+/* ====================== CỘT LỆNH (luôn hiện, đứng ngay sau Pin) ====================== */
+
+.colLenh {
+  grid-row: 1 / 3;
+  text-align: center;
+  font-weight: 600;
+  color: #e5e7eb;
+  border: 1px solid #8a8c92;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  background: #1f2937;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cellLenh {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border-right: 1px solid #8a8c92 !important;
+  padding: 0 2px;
+}
+
+/* Nút MUA (M) màu xanh */
+.orderBuyBtn {
+  background: #14532d;
+  border: 1px solid #16a34a;
+  color: #4ade80;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 3px;
+  line-height: 1;
+  transition: background 0.12s;
+
+  &:hover {
+    background: #166534;
+    color: #fff;
+  }
+}
+
+/* Nút BÁN (B) màu đỏ */
+.orderSellBtn {
+  background: #450a0a;
+  border: 1px solid #dc2626;
+  color: #f87171;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 3px;
+  line-height: 1;
+  transition: background 0.12s;
+
+  &:hover {
+    background: #7f1d1d;
+    color: #fff;
+  }
+}
+
+/* Nút khóa (chưa đăng nhập) */
+.orderLockBtn {
+  background: none;
+  border: none;
+  cursor: default;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.5;
+}
+
+/* Điểm vàng nhấp nháy khi có lệnh pending */
+.orderDot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #f59e0b;
+  animation: pulseDot 1.4s ease-in-out infinite;
+}
+
+@keyframes pulseDot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.75);
+  }
+}

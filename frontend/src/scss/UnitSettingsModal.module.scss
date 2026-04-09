@@ -1,0 +1,157 @@
+.unitModal {
+  /* Đập thẳng vào root modal của AntD */
+  :global(.ant-modal) {
+    --ant-modal-content-bg: #0f0f0f !important;
+    --ant-color-bg-elevated: #0f0f0f !important;
+    --ant-color-text: #ffffff !important;
+  }
+
+  /* Đè trực tiếp container (tên biến bạn thấy trong F12) */
+  :global(.ant-modal .ant-modal-container) {
+    background: #0f0f0f !important;
+  }
+
+  /* Đè content (inner box) */
+  :global(.ant-modal .ant-modal-content) {
+    background: #0f0f0f !important;
+    border: 1px solid #2f2f2f !important;
+    border-radius: 10px !important;
+  }
+
+  :global(.ant-modal .ant-modal-header) {
+    background: #0f0f0f !important;
+    border-bottom: 1px solid #969494 !important;
+  }
+
+  :global(.ant-modal .ant-modal-title) {
+    color: #ffffff !important;
+    padding: 18px 0px !important;
+    font-weight: bold !important;
+    font-size: 18px !important;
+  }
+
+  :global(.ant-modal .ant-modal-body) {
+    background: #0f0f0f !important;
+    color: #ffffff !important;
+    padding: 24px 28px !important;
+  }
+
+  :global(.ant-modal .ant-modal-footer) {
+    background: #0f0f0f !important;
+    border-top: 1px solid #969494 !important;
+    padding: 16px 28px !important;
+  }
+
+  /* Button */
+  :global(.ant-btn-default) {
+    background: #1f1f1f !important;
+    border-color: #3a3a3a !important;
+    color: #ffffff !important;
+
+    &:hover {
+      background: #2a2a2a !important;
+      border-color: #555 !important;
+    }
+  }
+
+  :global(.ant-btn-primary) {
+    background: #ef4444 !important;
+    border-color: #ef4444 !important;
+
+    &:hover {
+      background: #dc2626 !important;
+      border-color: #dc2626 !important;
+    }
+  }
+
+  /* Radio */
+  :global(.ant-radio-wrapper) {
+    color: #cccccc !important;
+
+    &:hover {
+      color: #ffffff !important;
+    }
+  }
+
+  :global(.ant-radio-wrapper-checked) {
+    color: #ffffff !important;
+  }
+
+  :global(.ant-radio-inner) {
+    background-color: #0f0f0f !important;
+    border-color: #888 !important;
+  }
+
+  :global(.ant-radio-checked .ant-radio-inner) {
+    background-color: #ef4444 !important;
+    border-color: #ef4444 !important;
+  }
+
+  /* Close */
+  :global(.ant-modal-close) {
+    color: #aaaaaa !important;
+
+    &:hover {
+      color: #ffffff !important;
+    }
+  }
+}
+
+/* Group */
+.unitGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+
+  padding-bottom: 16px;
+  border-bottom: 1px solid #969494;
+
+  &:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+}
+
+/* Label */
+.unitLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: #9ca3af;
+}
+
+/* Radio group */
+:global(.ant-radio-group) {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* Radio item */
+:global(.ant-radio-wrapper) {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 4px 8px;
+  border-radius: 6px;
+
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #1a1a1a;
+  }
+}
+
+/* Checked highlight nhẹ */
+:global(.ant-radio-wrapper-checked) {
+  background: #1f2937;
+}
+
+/* Buttons spacing */
+:global(.ant-modal-footer) {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}

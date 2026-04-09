@@ -1,0 +1,506 @@
+.filterToolbar {
+  width: 100%;
+  padding: 12px 5px;
+  background: #0f172a;
+  border-top: 1px solid #1f2937;
+  overflow: visible;
+  position: relative;
+  z-index: 100;
+}
+
+.toolbarContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding-bottom: 5px;
+
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 2px;
+
+    &:hover {
+      background: #4b5563;
+    }
+  }
+}
+
+.filterItem {
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Search Box */
+.searchBox {
+  display: flex;
+  align-items: center;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  padding: 8px 12px;
+  gap: 8px;
+  min-width: 150px;
+
+  &:focus-within {
+    border-color: #ef4444;
+  }
+}
+
+.searchIcon {
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.searchInput {
+  background: transparent;
+  border: none;
+  color: #e5e7eb;
+  font-size: 13px;
+  outline: none;
+  width: 130px;
+
+  &::placeholder {
+    color: #6b7280;
+  }
+}
+
+/* Search Dropdown */
+.searchDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: slideDown 0.15s ease;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 3px;
+
+    &:hover {
+      background: #4b5563;
+    }
+  }
+}
+
+/* Search Dropdown Portal - Renders to body, always on top */
+.searchDropdownPortal {
+  position: fixed;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: slideDown 0.15s ease;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 3px;
+
+    &:hover {
+      background: #4b5563;
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.searchSuggestionItem {
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  display: block;
+  white-space: nowrap;
+
+  &:hover {
+    background: #374151;
+
+    .suggestionSymbol {
+      color: #fca5a5;
+    }
+
+    .suggestionExchange {
+      color: #d1d5db;
+    }
+  }
+}
+
+.suggestionSymbol {
+  font-weight: 600;
+  font-size: 16px;
+  color: white;
+  transition: color 0.15s ease;
+}
+.suggestionName {
+  font-size: 16px;
+  color: white;
+  transition: color 0.15s ease;
+}
+.suggestionExchange {
+  font-size: 16px;
+  color: white;
+  transition: color 0.15s ease;
+}
+.separator {
+  font-size: 16px;
+  color: white;
+  margin: 0 4px;
+}
+
+/* Custom Select (exchange dropdowns) */
+.customSelect {
+  position: relative;
+}
+
+.customSelectTrigger {
+  padding: 8px 10px;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  color: #d1d5db;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+
+  &:hover {
+    border-color: #ef4444;
+    color: #ef4444;
+  }
+
+  &.activeExchange {
+    color: #ef4444;
+    font-weight: 700;
+    border-color: #ef4444;
+  }
+}
+
+.arrow {
+  font-size: 10px;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.customSelectMenu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 100%;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: slideDown 0.15s ease;
+  overflow: hidden;
+}
+
+/* Portal version - fixed positioning, renders to body */
+.customSelectMenuPortal {
+  position: fixed;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: slideDown 0.15s ease;
+  overflow: hidden;
+
+  &.categoryMenu {
+    max-height: 320px;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #374151;
+      border-radius: 3px;
+
+      &:hover {
+        background: #4b5563;
+      }
+    }
+  }
+}
+
+.customSelectOption {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #d1d5db;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: #374151;
+    color: #fca5a5;
+  }
+
+  &.selected {
+    color: #ef4444;
+    font-weight: 700;
+  }
+
+  &.disabled {
+    color: #6b7280;
+    cursor: not-allowed;
+    opacity: 0.6;
+
+    &:hover {
+      background: transparent;
+      color: #6b7280;
+    }
+  }
+}
+
+/* Filter Button */
+.filterButton {
+  padding: 8px 12px;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  color: #d1d5db;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+
+  svg {
+    font-size: 14px;
+  }
+
+  &:hover {
+    border-color: #ef4444;
+    color: #ef4444;
+  }
+
+  &.active {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: white;
+  }
+}
+
+/* Filter Select */
+.filterSelect {
+  padding: 8px 10px;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  color: #d1d5db;
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #ef4444;
+  }
+
+  &:focus {
+    border-color: #ef4444;
+  }
+
+  option {
+    background: #111827;
+    color: #d1d5db;
+  }
+
+  /* Selected HOSE state - red + bold + underline */
+  &.selectedHOSE {
+    color: #ef4444;
+    font-weight: 700;
+    border-color: #ef4444;
+
+    option {
+      color: #d1d5db;
+    }
+
+    option[value="HOSE"] {
+      color: #ef4444;
+      font-weight: 700;
+    }
+  }
+
+  /* Selected VN30 state - red + bold + underline */
+  &.selectedVN30 {
+    color: #ef4444;
+    font-weight: 700;
+    border-color: #ef4444;
+
+    option {
+      color: #d1d5db;
+    }
+
+    option[value="30"] {
+      color: #ef4444;
+      font-weight: 700;
+    }
+  }
+
+  /* Selected HNX state - red + bold + underline */
+  &.selectedHNX {
+    color: #ef4444;
+    font-weight: 700;
+    border-color: #ef4444;
+
+    option {
+      color: #d1d5db;
+    }
+
+    option[value="HNX"] {
+      color: #ef4444;
+      font-weight: 700;
+    }
+  }
+
+  /* Selected HNX30 state - red + bold + underline */
+  &.selectedHNX30 {
+    color: #ef4444;
+    font-weight: 700;
+    border-color: #ef4444;
+
+    option {
+      color: #d1d5db;
+    }
+
+    option[value="HNX30"] {
+      color: #ef4444;
+      font-weight: 700;
+    }
+  }
+
+  /* Selected Category state - red + bold (NO underline) */
+  &.selectedCategory {
+    color: #ef4444;
+    font-weight: 700;
+    border-color: #ef4444;
+
+    option {
+      color: #d1d5db;
+    }
+  }
+}
+//nút cài đặt của antd
+.settingsDropdown {
+  /* Khung dropdown tổng */
+  :global(.ant-dropdown-menu) {
+    /* class gốc của menu trong :contentReference[oaicite:0]{index=0} */
+    background: #1f2937; /* nền tối giống theme toolbar */
+    border: 1px solid #374151; /* viền xám nhẹ */
+    border-radius: 6px; /* bo góc dropdown */
+    padding: 4px; /* khoảng đệm bên trong menu */
+  }
+  /* Mỗi item trong dropdown */
+  :global(.ant-dropdown-menu-item) {
+    /* item menu của antd */
+    font-size: 13px; /* kích thước chữ */
+  }
+  /* Text thật nằm trong title-content */
+  :global(.ant-dropdown-menu-title-content) {
+    color: #e5e7eb; /* màu chữ mặc định (trắng xám) */
+  }
+  /* Hover vào item */
+  :global(.ant-dropdown-menu-item:hover) {
+    background: #374151; /* đổi nền khi hover */
+  }
+  /* Khi hover → đổi màu chữ */
+  :global(.ant-dropdown-menu-item:hover .ant-dropdown-menu-title-content) {
+    color: #fca5a5; /* chữ đỏ nhạt khi hover */
+  }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .toolbarContainer {
+    gap: 8px;
+  }
+
+  .searchBox {
+    min-width: 160px;
+  }
+
+  .filterButton,
+  .filterSelect,
+  .filterDropdownButton {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .filterToolbar {
+    padding: 12px 16px;
+  }
+
+  .toolbarContainer {
+    gap: 6px;
+  }
+
+  .searchBox {
+    min-width: 140px;
+  }
+
+  .filterButton,
+  .filterSelect,
+  .filterDropdownButton {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+}

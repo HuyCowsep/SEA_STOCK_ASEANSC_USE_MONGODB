@@ -1,0 +1,35 @@
+{
+  "name": "aseansc-backend",
+  "version": "1.0.0",
+  "description": "Backend API cho dự án AseanSC",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "npx ts-node src/server.ts",
+    "build": "tsc",
+    "start": "npx ts-node src/server.ts"
+  },
+  "dependencies": {
+    "axios": "^1.13.6",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^9.3.3",
+    "nodemailer": "^8.0.4",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^2.5.0"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/mongoose": "^5.11.96",
+    "@types/node": "^22.15.0",
+    "@types/nodemailer": "^7.0.11",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.7.3"
+  }
+}

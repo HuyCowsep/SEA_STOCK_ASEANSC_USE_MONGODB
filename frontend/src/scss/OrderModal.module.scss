@@ -1,0 +1,392 @@
+// OrderModal.module.scss
+// Dark theme nhất quán với DisplaySettingsModal — accent màu theo side MUA/BÁN
+
+.orderModalWrap {
+  :global(.ant-modal) {
+    --ant-modal-content-bg: #111827 !important;
+    --ant-color-bg-elevated: #111827 !important;
+    --ant-color-text: #ffffff !important;
+  }
+
+  :global(.ant-modal-content) {
+    background: #111827 !important;
+    padding: 0 !important;
+    border: 1px solid #1f2937;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  :global(.ant-modal-header) {
+    display: none !important; // dùng custom header bên trong body
+  }
+
+  :global(.ant-modal-body) {
+    background: #111827 !important;
+    padding: 0 !important;
+  }
+
+  :global(.ant-modal-footer) {
+    display: none !important; // footer tự render
+  }
+
+  :global(.ant-modal-close) {
+    color: #6b7280 !important;
+    top: 12px !important;
+    right: 12px !important;
+    z-index: 10;
+
+    &:hover {
+      color: #e5e7eb !important;
+      background: transparent !important;
+    }
+  }
+}
+
+// Tabs MUA / BÁN — chiếm full width, nằm trên đầu
+.sideTabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid #1f2937;
+}
+
+.sideTab {
+  padding: 14px 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  border: none;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+  border-radius: 0;
+}
+
+.sideTabBuy {
+  background: #0f172a;
+  color: #4ade80;
+
+  &:hover {
+    background: #14532d;
+  }
+}
+
+.sideTabBuyActive {
+  background: #166534;
+  color: #ffffff;
+  border-bottom: 3px solid #22c55e;
+}
+
+.sideTabSell {
+  background: #0f172a;
+  color: #f87171;
+
+  &:hover {
+    background: #450a0a;
+  }
+}
+
+.sideTabSellActive {
+  background: #7f1d1d;
+  color: #ffffff;
+  border-bottom: 3px solid #ef4444;
+}
+
+// Phần nội dung form bên dưới tabs
+.body {
+  padding: 16px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+// Dòng symbol + exchange badge
+.symbolRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid #1f2937;
+  padding-bottom: 10px;
+}
+
+.symbolCode {
+  font-size: 20px;
+  font-weight: 800;
+  color: #60a5fa;
+  letter-spacing: 0.03em;
+}
+
+.symbolName {
+  font-size: 13px;
+  color: #9ca3af;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    color: #f3f4f6; // sáng hơn nhẹ
+  }
+}
+
+.exchangeBadge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #e5e7eb;
+  background: #374151;
+  padding: 2px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+// Hàng giá tham chiếu (TC, Trần, Sàn, Khớp)
+.refPrices {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  background: #0f172a;
+  border-radius: 6px;
+  padding: 8px;
+  border: 1px solid #1f2937;
+}
+
+.refItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.refLabel {
+  font-size: 10px;
+  color: #6b7280;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.refTC {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffff00;
+}
+.refCeiling {
+  font-size: 13px;
+  font-weight: 700;
+  color: #b026ff;
+}
+.refFloor {
+  font-size: 13px;
+  font-weight: 700;
+  color: #3dd9f5;
+}
+.refClose {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+// Form rows chung
+.formRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 12px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.unit {
+  color: #6b7280;
+  font-size: 11px;
+}
+
+// Input chính
+.input {
+  background: #0f172a;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  color: #e5e7eb;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 8px 12px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+
+  &:focus {
+    border-color: #60a5fa;
+  }
+
+  &:disabled {
+    color: #4b5563;
+    cursor: not-allowed;
+  }
+
+  &::placeholder {
+    color: #4b5563;
+    font-weight: 400;
+    font-size: 13px;
+  }
+}
+
+// Gợi ý biên giá dưới ô nhập giá
+.priceHint {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.floorColor {
+  color: #3dd9f5;
+  font-weight: 600;
+}
+.ceilingColor {
+  color: #b026ff;
+  font-weight: 600;
+}
+
+// Nhóm nút loại lệnh LO/ATO/ATC/MP
+.orderTypeGroup {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.orderTypeBtn {
+  padding: 6px 4px;
+  background: #0f172a;
+  border: 1px solid #374151;
+  border-radius: 5px;
+  color: #9ca3af;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: #60a5fa;
+    color: #e5e7eb;
+  }
+}
+
+.orderTypeBtnActive {
+  background: #1e3a5f;
+  border-color: #60a5fa;
+  color: #60a5fa;
+}
+
+// Nút KL nhanh (100, 500, 1000...)
+.quickQty {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.quickQtyBtn {
+  padding: 4px 8px;
+  background: #0f172a;
+  border: 1px solid #374151;
+  border-radius: 4px;
+  color: #9ca3af;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: #374151;
+    background: #1f2937;
+    color: #e5e7eb;
+  }
+}
+
+// Hàng tổng giá trị ước tính
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #0f172a;
+  border-radius: 6px;
+  padding: 8px 12px;
+  border: 1px solid #1f2937;
+}
+
+.totalLabel {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.totalValue {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+// Hàng phí giao dịch
+.feeRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 12px;
+}
+
+.feeLabel {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.feeValue {
+  font-size: 11px;
+  color: #f59e0b; // màu vàng cam để phân biệt với tổng giá trị
+}
+
+// Thông báo lỗi
+.errorMsg {
+  font-size: 12px;
+  color: #f87171;
+  background: #450a0a;
+  border: 1px solid #7f1d1d;
+  border-radius: 5px;
+  padding: 8px 12px;
+}
+
+// Nút submit
+.submitBtn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: background 0.15s;
+  margin-top: 4px;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.submitBuy {
+  background: #16a34a;
+  color: #ffffff;
+
+  &:hover:not(:disabled) {
+    background: #15803d;
+  }
+}
+
+.submitSell {
+  background: #dc2626;
+  color: #ffffff;
+
+  &:hover:not(:disabled) {
+    background: #b91c1c;
+  }
+}

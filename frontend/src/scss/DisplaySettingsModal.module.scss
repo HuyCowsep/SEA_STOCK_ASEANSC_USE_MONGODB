@@ -1,0 +1,80 @@
+.unitModal {
+  /* Đập thẳng vào root modal của AntD */
+  :global(.ant-modal) {
+    --ant-modal-content-bg: #0f0f0f !important;
+    --ant-color-bg-elevated: #0f0f0f !important;
+    --ant-color-text: #ffffff !important;
+  }
+
+  /* Đè trực tiếp container (tên biến bạn thấy trong F12) */
+  :global(.ant-modal .ant-modal-container) {
+    background: #0f0f0f !important;
+    width: 420px !important; /* Giới hạn chiều rộng của modal */
+  }
+
+  :global(.ant-modal .ant-modal-header) {
+    background: #0f0f0f !important;
+    border-bottom: 1px solid #969494 !important;
+  }
+
+  :global(.ant-modal .ant-modal-title) {
+    color: #ffffff !important;
+    padding: 18px 0px !important;
+    font-weight: bold !important;
+    font-size: 18px !important;
+  }
+
+  :global(.ant-modal .ant-modal-body) {
+    background: #0f0f0f !important;
+    color: #ffffff !important;
+    padding: 20px 10px !important;
+  }
+
+  :global(.ant-modal .ant-modal-footer) {
+    background: #0f0f0f !important;
+    border-top: 1px solid #969494 !important;
+    padding: 16px 28px !important;
+  }
+
+  /* Nút áp dụng */
+  :global(.ant-btn-default) {
+    background: #1f1f1f !important;
+    border-color: #3a3a3a !important;
+    color: #ffffff !important;
+
+    &:hover {
+      background: #2a2a2a !important;
+      border-color: #555 !important;
+    }
+  }
+
+  :global(.ant-btn-primary) {
+    background: #ef4444 !important;
+    border-color: #ef4444 !important;
+
+    &:hover {
+      background: #dc2626 !important;
+      border-color: #dc2626 !important;
+    }
+  }
+
+  :global(.ant-checkbox-wrapper){
+    color: #ffffff !important;
+  }
+  
+  /* Nút đóng */
+  :global(.ant-modal-close) {
+    color: #aaaaaa !important;
+
+    &:hover {
+      color: #ffffff !important;
+    }
+  }
+}
+
+/* Khoảng cách giữa các nút ở footer */
+:global(.ant-modal-footer) {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}

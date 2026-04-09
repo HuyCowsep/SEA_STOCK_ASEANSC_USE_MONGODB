@@ -1,0 +1,366 @@
+// DepositModal.module.scss
+
+.depositModalWrap {
+  :global(.ant-modal) {
+    --ant-modal-content-bg: #111827 !important;
+    --ant-color-bg-elevated: #111827 !important;
+    --ant-color-text: #e00909 !important;
+  }
+
+  :global(.ant-modal-content) {
+    background: #111827 !important;
+    padding: 0 !important;
+    border: 1px solid #1f2937;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  :global(.ant-modal-header) {
+    display: none !important;
+  }
+
+  :global(.ant-modal-body) {
+    background: #111827 !important;
+    padding: 20px !important;
+  }
+
+  :global(.ant-modal-footer) {
+    display: none !important;
+  }
+
+  :global(.ant-modal-close) {
+    color: #6b7280 !important;
+    top: 12px !important;
+    right: 12px !important;
+    z-index: 10;
+
+    &:hover {
+      color: #e5e7eb !important;
+      background: transparent !important;
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// === HEADER ===
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+
+  h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #e5e7eb;
+  }
+}
+
+.headerIcon {
+  font-size: 22px;
+  color: #22c55e;
+}
+
+// === BALANCE BAR ===
+.balanceBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: #0f172a;
+  border: 1px solid #1f2937;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+
+.balanceItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.balanceLabel {
+  font-size: 11px;
+  color: #cccfd5;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.balanceValue {
+  font-size: 15px;
+  font-weight: 700;
+  color: #4ade80;
+}
+
+.balanceValueLocked {
+  font-size: 15px;
+  font-weight: 700;
+  color: #facc15;
+}
+
+.balanceValueTotal {
+  font-size: 15px;
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+.balanceDivider {
+  width: 1px;
+  height: 36px;
+  background: #374151;
+}
+
+// === SECTION ===
+.section {
+  background: #0f172a;
+  border: 1px solid #1f2937;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e5e7eb;
+  margin-bottom: 14px;
+
+  svg {
+    color: #22c55e;
+    font-size: 16px;
+  }
+}
+
+.linkedBadge {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: #4ade80;
+  background: #14532d;
+  padding: 2px 8px;
+  border-radius: 10px;
+  letter-spacing: 0.02em;
+}
+
+// === BANK LINK ===
+.linkedInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  padding: 10px 14px;
+
+  span {
+    font-size: 13px;
+    color: #d1d5db;
+  }
+}
+
+.changeBankBtn {
+  background: transparent;
+  border: 1px solid #374151;
+  color: #93c5fd;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:hover {
+    background: #1e3a5f;
+    border-color: #1e40af;
+  }
+}
+
+.linkBankForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bankSelect {
+  background: #111827;
+  border: 1px solid #374151;
+  color: #e5e7eb;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  appearance: auto;
+
+  option {
+    background: #1f2937;
+    color: #e5e7eb;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #22c55e;
+  }
+}
+
+.bankInput {
+  background: #111827;
+  border: 1px solid #374151;
+  color: #e5e7eb;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+
+  &::placeholder {
+    color: #4b5563;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #22c55e;
+  }
+}
+
+.linkBankBtn {
+  background: #1e40af;
+  color: #ffffff;
+  border: none;
+  padding: 10px 0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: #1d4ed8;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// === DEPOSIT ===
+.amountInputWrap {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.amountInput {
+  width: 100%;
+  background: #111827;
+  border: 1px solid #374151;
+  color: #e5e7eb;
+  padding: 12px 60px 12px 14px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: #4b5563;
+    font-weight: 400;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #22c55e;
+  }
+}
+
+.amountUnit {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+// Quick amount buttons
+.quickAmounts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.quickBtn {
+  background: #1f2937;
+  border: 1px solid #374151;
+  color: #d1d5db;
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #14532d;
+    border-color: #166534;
+    color: #4ade80;
+  }
+}
+
+// Limit info
+.limitInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  background: #111827;
+  border-radius: 6px;
+  border: 1px solid #1f2937;
+
+  span {
+    font-size: 12px;
+    color: #6b7280;
+  }
+
+  strong {
+    color: #4ade80;
+  }
+}
+
+// Nút nạp tiền
+.depositBtn {
+  width: 100%;
+  background: #16a34a;
+  color: #ffffff;
+  border: none;
+  padding: 12px 0;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  letter-spacing: 0.02em;
+
+  &:hover:not(:disabled) {
+    background: #15803d;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

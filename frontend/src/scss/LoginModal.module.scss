@@ -1,0 +1,458 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal {
+  width: 70vw;
+  max-width: 90%;
+  height: 700px;
+  display: grid;
+  grid-template-columns: 6fr 4fr;
+  background: #1f2937;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  padding: 60px 30px;
+  gap: 20px;
+}
+
+.left {
+  height: 100%;
+}
+
+.banner {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 20px;
+  transition: opacity 0.5s ease;
+}
+
+.right {
+  background: #000;
+  color: #fff;
+  padding: 24px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.right_1 {
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 25px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.inputGroup {
+  input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border: 1px solid #2f3540;
+    border-radius: 8px;
+    background: #111827;
+    color: #fff;
+    font-size: 14px;
+    outline: none;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+
+    &:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+
+    &::placeholder {
+      color: #9ca3af;
+    }
+  }
+
+  h3 {
+    margin-bottom: 5px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+}
+//============================================
+
+.forgotPassword {
+  margin: 8px 18px 0 0;
+  text-align: right;
+
+  button {
+    background: transparent;
+    border: none;
+    color: #f74036;
+    font-size: 15px;
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: #f74036;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 10px;
+
+  &:hover {
+    color: #ff5a50;
+  }
+}
+
+.otpActions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.resendOtpBtn {
+  background: transparent;
+  border: none;
+  color: #f74036;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:disabled {
+    color: #9ca3af;
+    cursor: not-allowed;
+    text-decoration: none;
+  }
+}
+
+.otpHint {
+  color: #9ca3af;
+  font-size: 12px;
+}
+//============================================
+
+.buttonLogin {
+  margin-top: 8px;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 8px;
+  background: #f74036;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+
+  &:hover {
+    background: #4096ff;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    background: #4b5563;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.error {
+  margin: 0;
+  color: #f87171;
+  font-size: 13px;
+  text-align: center;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 10px 0;
+  width: 100%;
+
+  span {
+    padding: 0 12px;
+    font-size: 15px;
+    color: #b6b6b8;
+    white-space: nowrap;
+  }
+
+  &::before,
+  &::after {
+    content: "";
+    flex: 1;
+    height: 0.5px;
+    background: #3f3e3e; // line liền
+  }
+}
+
+.closeBtn {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #6b7280;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+//============================================
+
+.qrLogin {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+}
+
+.qrBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #e53935;
+  color: #fff;
+  border: none;
+  padding: 5px 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: 0.2s;
+
+  &:hover {
+    background: #d32f2f;
+  }
+}
+
+.qrIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+//============================================
+//SCSS cho modal đăng nhập nhanh bằng QR code
+.qrOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.qrModal {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  width: 260px;
+  text-align: center;
+  animation: fadeIn 0.2s ease;
+
+  h3 {
+    margin-bottom: 12px;
+    color: black;
+    font-weight: bold;
+  }
+
+  p {
+    font-size: 15px;
+    color: black;
+    font-weight: 500;
+    margin: 10px 0 16px;
+  }
+}
+
+.qrBox {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin: 0 auto;
+  border: 2px dashed #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+
+  img {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.qrOverlayReload {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  button {
+    background: #f74036;
+    color: white;
+    border: none;
+    padding: 10px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+}
+
+.qrCloseBtn {
+  background: #ffd8d6;
+  color: red;
+  border: none;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+//============================================
+
+.dontHaveAccount {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 5px 25px;
+}
+
+.text {
+  font-size: 14px;
+  color: white;
+}
+
+.openAccountBtn {
+  background: transparent;
+  color: #f74036;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 500;
+
+  &:hover {
+    color: #ce4b44;
+  }
+}
+//============================================
+
+.dropdown {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dropdownItem {
+  position: relative;
+  flex: 1;
+}
+
+.dropdownBtn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: transparent;
+  color: white;
+  border: none;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.dropdownMenu {
+  position: absolute;
+  bottom: calc(100% + 2px);
+  min-width: 220px;
+  background: #282829;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  overflow: hidden;
+
+  a,
+  div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 12px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: 0.2s;
+    color: #fff;
+    text-decoration: none;
+
+    svg {
+      margin-right: 8px;
+    }
+
+    &:hover {
+      background: #3a3a3b;
+      color: #e6291c;
+    }
+  }
+}
+
+.menuPrimary {
+  left: 0;
+
+  a {
+    justify-content: flex-start;
+    gap: 8px;
+
+    svg {
+      margin-right: 0;
+      flex-shrink: 0;
+    }
+  }
+}
+
+.menuLang {
+  right: 0;
+  min-width: 170px;
+}

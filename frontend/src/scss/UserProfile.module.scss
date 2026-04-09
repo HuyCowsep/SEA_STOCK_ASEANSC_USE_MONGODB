@@ -1,0 +1,457 @@
+﻿.userProfileWrap {
+  :global(.ant-modal) {
+    --ant-modal-content-bg: #111827 !important;
+    --ant-color-bg-elevated: #111827 !important;
+  }
+
+  :global(.ant-modal-content) {
+    background: #111827 !important;
+    border: 1px solid #1f2937;
+    border-radius: 10px;
+    overflow: hidden;
+    padding: 0 !important;
+  }
+
+  :global(.ant-modal-header) {
+    display: none !important;
+  }
+
+  :global(.ant-modal-body) {
+    background: #111827 !important;
+    padding: 20px !important;
+  }
+
+  :global(.ant-modal-close) {
+    color: #6b7280 !important;
+
+    &:hover {
+      color: #e5e7eb !important;
+      background: transparent !important;
+    }
+  }
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  h2 {
+    margin: 0;
+    color: #e5e7eb;
+    font-size: 19px;
+    line-height: 1.25;
+  }
+
+  p {
+    margin: 4px 0 0;
+    color: #9ca3af;
+    font-size: 13px;
+  }
+}
+
+.reloadBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #d1d5db;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: #475569;
+    background: #1e293b;
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.balanceBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: #0f172a;
+  border: 1px solid #1f2937;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.balanceItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.balanceLabel {
+  font-size: 11px;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.balanceValue {
+  font-size: 14px;
+  font-weight: 700;
+  color: #4ade80;
+}
+
+.balanceValueLocked {
+  font-size: 14px;
+  font-weight: 700;
+  color: #facc15;
+}
+
+.balanceValueTotal {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+.balanceDivider {
+  width: 1px;
+  height: 32px;
+  background: #374151;
+}
+
+.section {
+  background: #0f172a;
+  border: 1px solid #1f2937;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #e5e7eb;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 12px;
+
+  svg {
+    color: #22c55e;
+  }
+}
+
+.sectionTitleBetween {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sectionTitleMain {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.joinedAt {
+  font-size: 12px;
+  font-weight: 500;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+.infoGrid {
+  display: grid;
+  gap: 8px;
+}
+
+.infoRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #111827;
+  border: 1px solid #1f2937;
+
+  span {
+    font-size: 13px;
+    color: #9ca3af;
+  }
+
+  strong {
+    font-size: 13px;
+    color: #f3f4f6;
+    text-align: right;
+    word-break: break-word;
+  }
+}
+
+.okValue {
+  color: #16a34a;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  padding: 2px 10px;
+  border-radius: 999px; // pill shape
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.warnValue {
+  color: #dc2626;
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.emptyState {
+  padding: 16px;
+  border-radius: 8px;
+  background: #0f172a;
+  border: 1px solid #1f2937;
+  color: #d1d5db;
+  font-size: 14px;
+}
+
+.errorState {
+  padding: 16px;
+  border-radius: 8px;
+  background: #450a0a;
+  border: 1px solid #7f1d1d;
+  color: #fca5a5;
+  font-size: 14px;
+}
+
+// ── Status badge (Hoat dong / Vo hieu) ────────────────────────────────────────
+.statusBadge {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 10px;
+}
+
+.statusActive {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid #166534;
+}
+
+.statusInactive {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid #7f1d1d;
+}
+
+// ── Field layout rows ─────────────────────────────────────────────────────────
+// 2-column grid
+.fieldRow2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+// full-width
+.fieldRow1 {
+  margin-bottom: 8px;
+}
+
+// ── Individual field box ──────────────────────────────────────────────────────
+.fieldBox {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 60px;
+}
+
+.fieldLabel {
+  font-size: 11px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 500;
+}
+
+.fieldValueRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 24px;
+}
+
+.fieldValue {
+  font-size: 13px;
+  color: #f3f4f6;
+  word-break: break-word;
+}
+
+.mono {
+  font-family: monospace;
+  letter-spacing: 0.04em;
+}
+
+// ── Edit mode ─────────────────────────────────────────────────────────────────
+.fieldEditRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fieldInput {
+  flex: 1;
+  background: #1f2937;
+  border: 1px solid #374151;
+  color: #f3f4f6;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  min-width: 0;
+
+  &:focus {
+    outline: none;
+    border-color: #22c55e;
+  }
+}
+
+.iconBtnEdit {
+  background: transparent;
+  border: none;
+  color: #4b5563;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-size: 12px;
+  flex-shrink: 0;
+  line-height: 1;
+
+  &:hover {
+    color: #93c5fd;
+  }
+}
+
+.iconBtnSave {
+  background: transparent;
+  border: none;
+  color: #4ade80;
+  cursor: pointer;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 13px;
+  flex-shrink: 0;
+  line-height: 1;
+
+  &:hover:not(:disabled) {
+    background: rgba(74, 222, 128, 0.1);
+  }
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.iconBtnCancel {
+  background: transparent;
+  border: none;
+  color: #f87171;
+  cursor: pointer;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 13px;
+  flex-shrink: 0;
+  line-height: 1;
+
+  &:hover:not(:disabled) {
+    background: rgba(248, 113, 113, 0.1);
+  }
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+// ── Change password form ──────────────────────────────────────────────────────
+.changePwBtn {
+  background: transparent;
+  border: 1px solid #374151;
+  color: #93c5fd;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &:hover {
+    background: #1e3a5f;
+    border-color: #1e40af;
+  }
+}
+
+.pwForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+.pwInput {
+  background: #1f2937;
+  border: 1px solid #374151;
+  color: #e5e7eb;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  width: 100%;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: #4b5563;
+  }
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+  }
+}
+
+.pwSaveBtn {
+  background: #1e40af;
+  color: #fff;
+  border: none;
+  padding: 9px 0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: #1d4ed8;
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

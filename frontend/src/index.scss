@@ -1,0 +1,20 @@
+//src/index.scss
+// @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
+/* reset margin mặc định của browser */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+}
