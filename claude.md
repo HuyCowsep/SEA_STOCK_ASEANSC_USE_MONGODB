@@ -4,6 +4,7 @@
 
 > File này chứa toàn bộ kiến trúc, quyết định kỹ thuật, và kế hoạch phát triển.
 > Đọc file này trước khi hỏi AI bất kỳ câu nào về dự án.
+> File được hỗ trợ viết bởi github copilot
 
 ---
 
@@ -21,24 +22,12 @@
 
 **Ports**: Backend `:3001` | Frontend `:5173`
 
-**Chạy dự án**:
-
-```bash
-# Terminal 1 — Backend
-cd backend && npm start        # npx ts-node src/server.ts
-
-# Terminal 2 — Frontend
-cd frontend && npm start       # vite dev
-```
-
----
-
 ## 2. Kiến trúc tổng quan
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
 │                         ASEAN Securities                           │
-│  wss://seastock.aseansc.com.vn/market/socket.io                   │
+│  wss://seastock.aseansc.com.vn/market/socket.io                    │
 │  Event "i" = instrument update | Event "idx" = index update        │
 └──────────────────────────┬─────────────────────────────────────────┘
                            │ WebSocket (socket.io-client v2)
@@ -54,12 +43,12 @@ cd frontend && npm start       # vite dev
 │    /api/orders/*         → orderController (đặt lệnh mock)         │
 │                                                                    │
 │  Socket events emit cho frontend:                                  │
-│    "instruments_data"    → dữ liệu cổ phiếu (snapshot + delta)    │
+│    "instruments_data"    → dữ liệu cổ phiếu (snapshot + delta)     │
 │    "indexsnaps_data"     → chỉ số thị trường (VN-Index, HNX...)    │
 │    "chartinday_data"     → biểu đồ mini trong ngày                 │
-│    "order_update"        → cập nhật trạng thái lệnh               │
+│    "order_update"        → cập nhật trạng thái lệnh                │
 │                                                                    │
-│  matchingEngine.ts       → Mock khớp lệnh, sau match:             │
+│  matchingEngine.ts       → Mock khớp lệnh, sau match:              │
 │                            update MongoDB instruments              │
 │                            → markInstrumentChanged() → FE flash    │
 │                                                                    │
@@ -68,7 +57,7 @@ cd frontend && npm start       # vite dev
 │    Order       → userId, symbol, side, price, quantity, status     │
 │    Account     → userId, available, locked, bankAccount            │
 │    Holding     → userId, symbol, available, locked, avgPrice       │
-│    Instrument  → dữ liệu bảng giá (collection "instruments")      │
+│    Instrument  → dữ liệu bảng giá (collection "instruments")       │
 │    MarketIndex → chỉ số thị trường (collection "indices")          │
 └──────────────────────────┬─────────────────────────────────────────┘
                            │ Socket.IO (v4)
@@ -80,19 +69,19 @@ cd frontend && npm start       # vite dev
 │                                                                    │
 │  Components:                                                       │
 │    Header           → nav, login/register, user dropdown           │
-│    MarketIndexCards → VN-Index, HNX-Index, UPCOM (5 thẻ)          │
-│    FilterToolbar    → chọn sàn, ngành, search mã, CW/ETF filter   │
+│    MarketIndexCards → VN-Index, HNX-Index, UPCOM (5 thẻ)           │
+│    FilterToolbar    → chọn sàn, ngành, search mã, CW/ETF filter    │
 │    StockTable       → bảng giá chính (TanStack Virtual)            │
 │    Footer           → thông tin, đơn vị                            │
 │                                                                    │
 │  Modals:                                                           │
 │    LoginModal, ForgotPasswordModal, OpenAccountModal               │
-│    DisplaySettingsModal, UnitSettingsModal                          │
-│    OrderModal → form đặt lệnh mua/bán                             │
-│    UserProfileModal → thông tin + chỉnh sửa cá nhân               │
+│    DisplaySettingsModal, UnitSettingsModal                         │
+│    OrderModal → form đặt lệnh mua/bán                              │
+│    UserProfileModal → thông tin + chỉnh sửa cá nhân                │
 │    DepositModal → nạp tiền ảo                                      │
 │                                                                    │
-│  websocket/client.ts → Socket.IO client kết nối backend :3001     │
+│  websocket/client.ts → Socket.IO client kết nối backend :3001      │
 └────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -162,7 +151,7 @@ Dashboard.tsx:
 
 ---
 
-## 4. Cấu trúc file hiện tại
+## 4. Cấu trúc file hiện tại (có thể thêm trong tương lai)
 
 ```
 backend/src/
@@ -268,13 +257,13 @@ Frontend nhận → cập nhật sổ lệnh + highlight trên bảng giá
 
 #### Backend
 
-| File                             | Nội dung                                                                                                                                                          |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `models/Order.ts`                | Schema: userId, symbol, exchange, side(buy/sell), orderType(LO/ATO/ATC/MP), price, quantity, filledQuantity, status(pending/partial/matched/cancelled), createdAt |
-| `controllers/orderController.ts` | `placeOrder()` — validate + lưu DB. `getOrders()` — lấy lệnh của user. `cancelOrder()` — hủy lệnh pending                                                         |
-| `routes/order.routes.ts`         | `POST /` , `GET /` , `DELETE /:id` — gắn auth middleware                                                                                                          |
-| `middleware/auth.ts`             | **[MỚI]** Verify JWT, gắn `req.userId` — dùng cho order routes                                                                                                    |
-| `socket/matchingEngine.ts`       | **[MỚI]** setInterval 1-2s, duyệt pending orders, so sánh giá cache, khớp lệnh, emit socket                                                                       |
+| File                           | Nội dung                                                                                        |
+| ------------------------------ | ----------------------------------------------------------------------------------------------- |
+| models/Order.ts                | Định nghĩa schema Order (userId, symbol, exchange, side, orderType, price, quantity, status...) |
+| controllers/orderController.ts | Xử lý logic: placeOrder (tạo lệnh), getOrders (lấy danh sách), cancelOrder (huỷ lệnh)           |
+| routes/order.routes.ts         | Định nghĩa API: POST /, GET /, DELETE /:id và gắn auth middleware                               |
+| middleware/auth.ts             | Xác thực JWT, gắn req.userId vào request                                                        |
+| socket/matchingEngine.ts       | Chạy định kỳ (1–2s), duyệt lệnh pending, so sánh giá cache, khớp lệnh và emit socket            |
 
 #### Frontend
 
@@ -604,3 +593,27 @@ _Cập nhật lần cuối: 07/04/2026_
 3. Thứ tự trong interval
    ① runP2PMatching() ← ưu tiên người vs người
    ② tryMatchOrder() ← lệnh còn lại mới so vs giá cache
+
+## 12. Cập nhật để chạy được lỗi sau: "bảng giá chỉ nháy flash khi lệnh khớp, còn khi chỉ mới đặt lệnh pending thì các cột bid/ask (KL1/KL2/KL3, Giá1/Giá2/Giá3 bên mua và bán) không cập nhật gì hết"
+
+1. polling.ts thêm hàm refreshOrderBookInCache(exchange, symbol)
+
+- Query tất cả lệnh LO pending/partial cho mã đó
+- Nhóm theo giá, cộng KL còn lại
+- Tính top 3 bid (mua — giá cao nhất trước) và top 3 offer (bán — giá thấp nhất trước)
+- Cập nhật bidPrice1/bidVol1/bidPrice2/bidVol2/bidPrice3/bidVol3 và offerPrice1/offerVol1... vào cache
+- Gọi markInstrumentChanged → broadcast delta → FE nháy flash
+
+2. orderController.ts — Gọi refreshOrderBookInCache:
+
+- Sau khi placeOrder lưu lệnh thành công → cập nhật bid/ask ngay lập tức
+- Sau khi cancelOrder hủy lệnh → xóa khỏi order book
+
+3. matchingEngine.ts — Gọi refreshOrderBookInCache:
+
+- Sau P2P match → lệnh đã khớp biến khỏi order book
+- Sau mock match → tương tự
+
+----> Kết quả: User đặt lệnh MUA 100 KL giá 75.5 → bidPrice1 = 75.5, bidVol1 = 100 hiện lên bảng ngay, nháy flash 420ms. Khi lệnh khớp/hủy → columns cập nhật lại chính xác.
+
+_Cập nhật lần cuối: 13/04/2026_

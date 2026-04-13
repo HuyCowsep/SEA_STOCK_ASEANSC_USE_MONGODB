@@ -15,6 +15,7 @@ import axios from "axios";
 import { Server, Socket } from "socket.io";
 import Instrument from "../models/Instrument";
 import MarketIndex from "../models/MarketIndex";
+import Order from "../models/Order";
 
 // ChartInday vẫn lấy từ ASEAN để biểu đồ động đẹp
 const BASE_URL = "https://seastock.aseansc.com.vn";
@@ -91,6 +92,51 @@ async function loadInitialDataFromDB() {
       console.error(`  ❌ Lỗi load ${exchange} từ MongoDB:`, err);
     }
   }
+}
+
+// ====================== REFRESH ORDER BOOK — GỌI SAU KHI ĐẶT/HỦY/KHỚP LỆNH ======================
+// Tổng hợp tất cả lệnh LO pending/partial cho symbol, tính top 3 bid/ask, cập nhật cache và broadcast
+// FE sẽ thấy các cột bidPrice1/bidVol1... offerPrice1/offerVol1... thay đổi ngay khi lệnh được đặt
+export async function refreshOrderBookInCache(exchange: string, symbol: string): Promise<void> {
+  const cache = exchangeCache[exchange];
+  if (!cache || !cache.has(symbol)) return;
+
+  // Lấy tất cả lệnh LO còn pending/partial cho mã này
+  const pendingOrders = await Order.find({
+    symbol,
+    exchange,
+    orderType: "LO",
+    status: { $in: ["pending", "partial"] },
+  }).lean();
+
+  // Nhóm theo giá, cộng KL còn lại
+  const bidMap = new Map<number, number>();
+  const offerMap = new Map<number, number>();
+
+  for (const order of pendingOrders) {
+    const remainQty = order.quantity - order.filledQuantity;
+    if (remainQty <= 0) continue;
+    if (order.side === "buy") {
+      bidMap.set(order.price, (bidMap.get(order.price) || 0) + remainQty);
+    } else {
+      offerMap.set(order.price, (offerMap.get(order.price) || 0) + remainQty);
+    }
+  }
+
+  // Bên MUA: giá cao nhất ưu tiên (top bid), bên BÁN: giá thấp nhất ưu tiên (top ask)
+  const bids = Array.from(bidMap.entries()).sort((a, b) => b[0] - a[0]);
+  const offers = Array.from(offerMap.entries()).sort((a, b) => a[0] - b[0]);
+
+  const updatedFields: Record<string, unknown> = {
+    bidPrice1: bids[0]?.[0] ?? 0,  bidVol1: bids[0]?.[1] ?? 0,
+    bidPrice2: bids[1]?.[0] ?? 0,  bidVol2: bids[1]?.[1] ?? 0,
+    bidPrice3: bids[2]?.[0] ?? 0,  bidVol3: bids[2]?.[1] ?? 0,
+    offerPrice1: offers[0]?.[0] ?? 0, offerVol1: offers[0]?.[1] ?? 0,
+    offerPrice2: offers[1]?.[0] ?? 0, offerVol2: offers[1]?.[1] ?? 0,
+    offerPrice3: offers[2]?.[0] ?? 0, offerVol3: offers[2]?.[1] ?? 0,
+  };
+
+  markInstrumentChanged(exchange, symbol, updatedFields);
 }
 
 // ====================== MARK CHANGED — GỌI TỪ matchingEngine ======================

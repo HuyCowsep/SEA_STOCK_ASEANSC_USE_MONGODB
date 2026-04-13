@@ -6,7 +6,7 @@ import { AuthRequest } from "../middleware/auth";
 import Order from "../models/Order";
 import Account from "../models/Account";
 import Holding from "../models/Holding";
-import { getExchangeCache } from "../socket/polling";
+import { getExchangeCache, refreshOrderBookInCache } from "../socket/polling";
 
 // Mức phí giao dịch cố định: 0.15% trên tổng giá trị mỗi lệnh
 const FEE_RATE = 0.0015;
@@ -169,6 +169,14 @@ const placeOrder = async (req: AuthRequest, res: Response) => {
       matchedAt: null,
     });
 
+    // Cập nhật sổ lệnh trong cache ngay khi đặt lệnh → FE nháy flash bid/ask columns
+    // Chỉ có ý nghĩa với LO (có giá cụ thể để hiển thị trong order book)
+    if (orderType === "LO") {
+      refreshOrderBookInCache(exchange, symbolUpper).catch((err) =>
+        console.error("[Order] ❌ Lỗi refresh order book sau đặt lệnh:", err)
+      );
+    }
+
     return res.status(201).json({
       message: "Đặt lệnh thành công",
       order: {
@@ -259,6 +267,13 @@ const cancelOrder = async (req: AuthRequest, res: Response) => {
       if (remainQty > 0) {
         await Holding.updateOne({ userId, symbol: order.symbol }, { $inc: { available: remainQty, locked: -remainQty } });
       }
+    }
+
+    // Cập nhật order book sau khi hủy để bid/ask columns phản ánh đúng
+    if (order.orderType === "LO") {
+      refreshOrderBookInCache(order.exchange, order.symbol).catch((err) =>
+        console.error("[Order] ❌ Lỗi refresh order book sau hủy lệnh:", err)
+      );
     }
 
     return res.json({

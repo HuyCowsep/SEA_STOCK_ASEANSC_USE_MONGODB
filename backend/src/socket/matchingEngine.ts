@@ -7,7 +7,7 @@ import Order, { IOrder } from "../models/Order";
 import Account from "../models/Account";
 import Holding from "../models/Holding";
 import Instrument from "../models/Instrument";
-import { getExchangeCache, markInstrumentChanged } from "./polling";
+import { getExchangeCache, markInstrumentChanged, refreshOrderBookInCache } from "./polling";
 
 // Mức phí giao dịch cố định: 0.15% trên tổng giá trị mỗi lệnh (đồng bộ với orderController)
 const FEE_RATE = 0.0015;
@@ -178,6 +178,9 @@ async function matchP2P(buyOrder: IOrder, sellOrder: IOrder, matchedPrice: numbe
     markInstrumentChanged(buyOrder.exchange, buyOrder.symbol, updated);
   }
 
+  // Cập nhật bid/ask columns — lệnh đã khớp thì rời khỏi order book
+  refreshOrderBookInCache(buyOrder.exchange, buyOrder.symbol).catch(() => {});
+
   console.log(
     `[P2P] ✅ KHỚP P2P — ${buyOrder.symbol} | orderId MUA: ${buyOrder._id} vs BÁN: ${sellOrder._id} | ` +
       `giá: ${matchedPrice} | KL: ${matchedQty}`,
@@ -338,6 +341,9 @@ async function matchFull(order: IOrder, matchedPrice: number, io: Server) {
       markInstrumentChanged(order.exchange, order.symbol, sellUpdated);
     }
   }
+
+  // Cập nhật bid/ask columns — lệnh đã khớp thì rời khỏi order book
+  refreshOrderBookInCache(order.exchange, order.symbol).catch(() => {});
 
   console.log(
     `[MatchingEngine] ✅ KHỚP LỆNH — orderId: ${order._id} | ${order.side} ${order.symbol} | ` +
