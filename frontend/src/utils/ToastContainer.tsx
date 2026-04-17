@@ -1,5 +1,4 @@
 // src/utils/ToastContainer.tsx
-// Shared toast UI — góc phải dưới, style giống OrderModal
 
 import { FiAlertTriangle, FiCheck, FiInfo, FiX } from "react-icons/fi";
 import type { ToastItem } from "./useToast";

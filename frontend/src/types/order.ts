@@ -50,4 +50,10 @@ export interface OrderUpdatePayload {
   status: OrderStatus;
   matchedPrice: number | null;
   matchedAt: string | null;
+  cashIn?: number;
+  cashOut?: number;
+  fee?: number;
+  refund?: number;
+  lockedReleased?: number;
+  matchedQtyDelta?: number;
 }

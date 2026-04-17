@@ -5,6 +5,8 @@ import type { UnitSettings } from "../types/tableConfig";
 import type { Order, OrderStatus, OrderSide } from "../types/order";
 import styles from "../scss/OrderBook.module.scss";
 import Swal from "sweetalert2";
+import { useToast } from "../utils/useToast";
+import ToastContainer from "../utils/ToastContainer";
 
 interface Props {
   token: string | null;
@@ -40,6 +42,7 @@ const OrderBook = ({ token, orders, onCancelOrder, unitSettings }: Props) => {
   const [expanded, setExpanded] = useState(true);
   const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
   const [cancellingIds, setCancellingIds] = useState<Set<string>>(new Set());
+  const { toasts, pushToast, removeToast } = useToast();
 
   const filteredOrders = useMemo(() => {
     if (activeFilter === "all") return orders;
@@ -77,22 +80,9 @@ const OrderBook = ({ token, orders, onCancelOrder, unitSettings }: Props) => {
 
       onCancelOrder(orderId);
 
-      Swal.fire({
-        icon: "success",
-        title: "Đã huỷ lệnh",
-        timer: 1200,
-        showConfirmButton: false,
-        background: "#111827",
-        color: "#e5e7eb",
-      });
+      pushToast("Đã huỷ lệnh", "Lệnh đã được huỷ thành công", "success");
     } catch {
-      Swal.fire({
-        icon: "error",
-        title: "Huỷ lệnh thất bại",
-        text: "Vui lòng thử lại",
-        background: "#111827",
-        color: "#e5e7eb",
-      });
+      pushToast("Huỷ lệnh thất bại", "Vui lòng thử lại", "error");
     } finally {
       setCancellingIds((prev) => {
         const next = new Set(prev);
@@ -220,6 +210,7 @@ const OrderBook = ({ token, orders, onCancelOrder, unitSettings }: Props) => {
           </div>
         </div>
       </div>
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
   );
 };

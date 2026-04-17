@@ -9,7 +9,7 @@
   flex-direction: column;
   gap: 10px;
   z-index: 2000;
-  max-width: min(420px, calc(100vw - 32px));
+  max-width: min(480px, calc(100vw - 32px));
   pointer-events: none; // container không block click, chỉ item mới có pointer
 }
 
