@@ -9,7 +9,7 @@ import authRoutes from "./routes/auth.routes";
 import datafeedRoutes from "./routes/datafeed";
 import orderRoutes from "./routes/order.routes";
 import depositRoutes from "./routes/deposit.routes";
-import { startPolling } from "./socket/polling";
+import { startPolling } from "./socket/marketDataSync";
 import { startMatchingEngine } from "./socket/matchingEngine";
 import { connectDB } from "./config/database";
 

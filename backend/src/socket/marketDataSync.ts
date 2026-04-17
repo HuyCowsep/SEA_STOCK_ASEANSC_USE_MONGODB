@@ -1,4 +1,4 @@
-// backend/src/socket/polling.ts
+// backend/src/socket/marketDataSync.ts
 // ============================================================
 // PHIÊN BẢN MỚI: Data 100% từ MongoDB (collection instruments + indices)
 // Không còn kết nối ASEAN WebSocket / ASEAN REST API nữa.

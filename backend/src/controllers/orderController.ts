@@ -6,7 +6,7 @@ import { AuthRequest } from "../middleware/auth";
 import Order from "../models/Order";
 import Account from "../models/Account";
 import Holding from "../models/Holding";
-import { getExchangeCache, refreshOrderBookInCache } from "../socket/polling";
+import { getExchangeCache, refreshOrderBookInCache } from "../socket/marketDataSync";
 
 // Mức phí giao dịch cố định: 0.15% trên tổng giá trị mỗi lệnh
 const FEE_RATE = 0.0015;
