@@ -405,13 +405,11 @@ const StockTable = forwardRef<StockTableHandle, StockTableProps>(
               <button className={styles.orderLockBtn} title="Vui lòng đăng nhập để đặt lệnh">
                 <LockOutlined style={{ fontSize: 12, color: "#4b5563" }} />
               </button>
-            ) : activeOrdersMap.has(stock.symbol) ? (
-              <span
-                className={styles.orderDot}
-                title={`Có lệnh ${activeOrdersMap.get(stock.symbol)?.side === "buy" ? "Mua" : "Bán"} đang chờ khớp`}
-              />
             ) : (
               <>
+                {activeOrdersMap.has(stock.symbol) && (
+                  <span className={styles.orderDot} title="Bạn đang có lệnh chờ khớp ở mã này" />
+                )}
                 <button
                   className={styles.orderBuyBtn}
                   title="Đặt lệnh Mua"
