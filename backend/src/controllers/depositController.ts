@@ -5,9 +5,9 @@ import { Request, Response } from "express";
 import Account from "../models/Account";
 
 // === GIỚI HẠN NẠP TIỀN ===
-const MAX_DEPOSIT_PER_TRANSACTION = 5_000_000_000;   // 5 tỷ / lần
-const MIN_DEPOSIT_PER_TRANSACTION = 100_000;          // 100k / lần
-const MAX_DEPOSIT_PER_DAY = 10_000_000_000;           // 10 tỷ / ngày
+const MAX_DEPOSIT_PER_TRANSACTION = 5_000_000_000; // 5 tỷ / lần
+const MIN_DEPOSIT_PER_TRANSACTION = 100_000; // 100k / lần
+const MAX_DEPOSIT_PER_DAY = 10_000_000_000; // 10 tỷ / ngày
 
 // Helper: lấy ngày hiện tại dạng "YYYY-MM-DD"
 const getTodayStr = () => {
@@ -22,12 +22,12 @@ const fmtVND = (n: number) => n.toLocaleString("vi-VN") + " VND";
 // POST /api/deposit/link-bank — Liên kết tài khoản ngân hàng
 // Body: { bankAccount: "123456789", bankName: "Vietcombank" }
 // ============================================================
-export const linkBank = async (req: Request, res: Response) => {
+const linkBank = async (req: Request, res: Response) => {
   try {
     const userId = (req as unknown as { userId: string }).userId;
 
-    const bankAccount = (typeof req.body?.bankAccount === "string" ? req.body.bankAccount.trim() : "");
-    const bankName = (typeof req.body?.bankName === "string" ? req.body.bankName.trim() : "");
+    const bankAccount = typeof req.body?.bankAccount === "string" ? req.body.bankAccount.trim() : "";
+    const bankName = typeof req.body?.bankName === "string" ? req.body.bankName.trim() : "";
 
     if (!bankAccount) {
       return res.status(400).json({ message: "Vui lòng nhập số tài khoản ngân hàng" });
@@ -66,13 +66,12 @@ export const linkBank = async (req: Request, res: Response) => {
 // Body: { amount: 50000000 }
 // Yêu cầu: đã liên kết ngân hàng, validate giới hạn/ngày
 // ============================================================
-export const deposit = async (req: Request, res: Response) => {
+const deposit = async (req: Request, res: Response) => {
   try {
     const userId = (req as unknown as { userId: string }).userId;
 
     const rawAmount = req.body?.amount;
-    const amount = typeof rawAmount === "number" ? rawAmount
-      : typeof rawAmount === "string" ? Number(rawAmount) : NaN;
+    const amount = typeof rawAmount === "number" ? rawAmount : typeof rawAmount === "string" ? Number(rawAmount) : NaN;
 
     if (!amount || isNaN(amount) || amount <= 0) {
       return res.status(400).json({ message: "Số tiền không hợp lệ" });
@@ -141,7 +140,7 @@ export const deposit = async (req: Request, res: Response) => {
 // ============================================================
 // GET /api/deposit/info — Lấy thông tin nạp tiền (bank + hạn mức)
 // ============================================================
-export const getDepositInfo = async (req: Request, res: Response) => {
+const getDepositInfo = async (req: Request, res: Response) => {
   try {
     const userId = (req as unknown as { userId: string }).userId;
 
@@ -178,3 +177,5 @@ export const getDepositInfo = async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Lỗi server" });
   }
 };
+
+export { linkBank, deposit, getDepositInfo };

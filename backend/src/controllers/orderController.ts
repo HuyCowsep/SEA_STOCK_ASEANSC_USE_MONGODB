@@ -172,9 +172,7 @@ const placeOrder = async (req: AuthRequest, res: Response) => {
     // Cập nhật sổ lệnh trong cache ngay khi đặt lệnh → FE nháy flash bid/ask columns
     // Chỉ có ý nghĩa với LO (có giá cụ thể để hiển thị trong order book)
     if (orderType === "LO") {
-      refreshOrderBookInCache(exchange, symbolUpper).catch((err) =>
-        console.error("[Order] ❌ Lỗi refresh order book sau đặt lệnh:", err)
-      );
+      refreshOrderBookInCache(exchange, symbolUpper).catch((err) => console.error("[Order] ❌ Lỗi refresh order book sau đặt lệnh:", err));
     }
 
     return res.status(201).json({
@@ -271,9 +269,7 @@ const cancelOrder = async (req: AuthRequest, res: Response) => {
 
     // Cập nhật order book sau khi hủy để bid/ask columns phản ánh đúng
     if (order.orderType === "LO") {
-      refreshOrderBookInCache(order.exchange, order.symbol).catch((err) =>
-        console.error("[Order] ❌ Lỗi refresh order book sau hủy lệnh:", err)
-      );
+      refreshOrderBookInCache(order.exchange, order.symbol).catch((err) => console.error("[Order] ❌ Lỗi refresh order book sau hủy lệnh:", err));
     }
 
     return res.json({
@@ -290,16 +286,16 @@ const cancelOrder = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export { placeOrder, getOrders, cancelOrder, getBalance, getHoldings };
-
 // ====================== LẤY SỐ DƯ TÀI KHOẢN ======================
-async function getBalance(req: AuthRequest, res: Response) {
+const getBalance = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId;
     const account = await Account.findOne({ userId });
+
     if (!account) {
       return res.json({ available: 0, locked: 0, total: 0 });
     }
+
     return res.json({
       available: account.available,
       locked: account.locked,
@@ -309,13 +305,14 @@ async function getBalance(req: AuthRequest, res: Response) {
     console.error("[Order] ❌ Lỗi lấy số dư:", error);
     return res.status(500).json({ message: "Lỗi server khi lấy số dư" });
   }
-}
+};
 
 // ====================== LẤY DANH MỤC CỔ PHIẾU ======================
-async function getHoldings(req: AuthRequest, res: Response) {
+const getHoldings = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId;
     const holdings = await Holding.find({ userId }).lean();
+
     return res.json(
       holdings
         .filter((h) => h.available > 0 || h.locked > 0)
@@ -331,4 +328,6 @@ async function getHoldings(req: AuthRequest, res: Response) {
     console.error("[Order] ❌ Lỗi lấy danh mục:", error);
     return res.status(500).json({ message: "Lỗi server khi lấy danh mục" });
   }
-}
+};
+
+export { placeOrder, getOrders, cancelOrder, getBalance, getHoldings };

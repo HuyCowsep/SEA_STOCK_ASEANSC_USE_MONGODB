@@ -23,7 +23,7 @@ const signToken = (userId: string) => {
 
 const generateOtpCode = () => String(Math.floor(100000 + Math.random() * 900000));
 
-export const register = async (req: Request, res: Response) => {
+const register = async (req: Request, res: Response) => {
   try {
     const username = normalizeString(req.body?.username);
     const email = normalizeEmail(req.body?.email);
@@ -65,7 +65,7 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+const login = async (req: Request, res: Response) => {
   try {
     const username = normalizeString(req.body?.username);
     const password = normalizePassword(req.body?.password);
@@ -123,7 +123,7 @@ export const getMe = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const requestPasswordOtp = async (req: Request, res: Response) => {
+const requestPasswordOtp = async (req: Request, res: Response) => {
   try {
     const email = normalizeEmail(req.body?.email);
     if (!email) return res.status(400).json({ message: "Thiếu email" });
@@ -148,7 +148,7 @@ export const requestPasswordOtp = async (req: Request, res: Response) => {
   }
 };
 
-export const resetPasswordWithOtp = async (req: Request, res: Response) => {
+const resetPasswordWithOtp = async (req: Request, res: Response) => {
   try {
     const email = normalizeEmail(req.body?.email);
     const otp = normalizeString(req.body?.otp);
@@ -192,7 +192,7 @@ export const resetPasswordWithOtp = async (req: Request, res: Response) => {
 // ===================================================================
 // PUT /api/auth/profile — Cập nhật thông tin cá nhân (cần đăng nhập)
 // ===================================================================
-export const updateProfile = async (req: AuthRequest, res: Response) => {
+const updateProfile = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId;
     if (!userId) return res.status(401).json({ message: "Chưa đăng nhập" });
@@ -229,7 +229,7 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ message: "Không có thông tin nào được gửi lên" });
     }
 
-    const user = await User.findByIdAndUpdate(userId, { $set: updates }, { returnDocument: 'after' })
+    const user = await User.findByIdAndUpdate(userId, { $set: updates }, { returnDocument: "after" })
       .select("username email fullName nickname phone dateOfBirth cccd status createdAt")
       .lean();
 
@@ -258,7 +258,7 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
 // ===================================================================
 // POST /api/auth/change-password — Đổi mật khẩu (cần mật khẩu cũ, không cần OTP)
 // ===================================================================
-export const changePassword = async (req: AuthRequest, res: Response) => {
+const changePassword = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId;
     if (!userId) return res.status(401).json({ message: "Chưa đăng nhập" });
@@ -297,3 +297,5 @@ export const changePassword = async (req: AuthRequest, res: Response) => {
     return res.status(500).json({ message: "Lỗi server" });
   }
 };
+
+export { register, login, requestPasswordOtp, resetPasswordWithOtp, updateProfile, changePassword };

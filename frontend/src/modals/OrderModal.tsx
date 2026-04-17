@@ -41,11 +41,15 @@ type PlaceOrderApiResponse = {
 };
 
 //4 loại lệnh cơ bản nhất: LO (lệnh giới hạn), ATO (at-the-open), ATC (at-the-close), MP (market price)
-const ORDER_TYPES: OrderType[] = ["LO", "ATO", "ATC", "MP"];
+const ORDER_TYPES: OrderType[] = [
+  "LO",
+  // "ATO", "ATC",
+  "MP",
+];
 const ORDER_TYPE_LABELS: Record<OrderType, string> = {
   LO: "LO",
-  ATO: "ATO",
-  ATC: "ATC",
+  //ATO: "ATO",
+  // ATC: "ATC",
   MP: "MP",
 };
 
