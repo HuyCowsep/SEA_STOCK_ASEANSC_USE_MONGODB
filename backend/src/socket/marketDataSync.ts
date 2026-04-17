@@ -1,15 +1,10 @@
 // backend/src/socket/marketDataSync.ts
-// ============================================================
-// PHIÊN BẢN MỚI: Data 100% từ MongoDB (collection instruments + indices)
-// Không còn kết nối ASEAN WebSocket / ASEAN REST API nữa.
-//
-// LUỒNG MỚI:
+
 //   startPolling(io)
 //     → loadInitialDataFromDB()      ← đọc MongoDB thay vì gọi ASEAN REST
 //     → io.on("connection")          ← khi FE connect, gửi snapshot từ cache
 //     → markInstrumentChanged()      ← matchingEngine gọi sau khi khớp lệnh
-//     → broadcastDeltaImmediately()  ← emit delta xuống FE → FE nháy flash cell
-// ============================================================
+//     → broadcastDeltaImmediately()  ← emit delta sang FE → FE nháy flash cell
 
 import axios from "axios";
 import { Server, Socket } from "socket.io";
@@ -128,12 +123,18 @@ export async function refreshOrderBookInCache(exchange: string, symbol: string):
   const offers = Array.from(offerMap.entries()).sort((a, b) => a[0] - b[0]);
 
   const updatedFields: Record<string, unknown> = {
-    bidPrice1: bids[0]?.[0] ?? 0,  bidVol1: bids[0]?.[1] ?? 0,
-    bidPrice2: bids[1]?.[0] ?? 0,  bidVol2: bids[1]?.[1] ?? 0,
-    bidPrice3: bids[2]?.[0] ?? 0,  bidVol3: bids[2]?.[1] ?? 0,
-    offerPrice1: offers[0]?.[0] ?? 0, offerVol1: offers[0]?.[1] ?? 0,
-    offerPrice2: offers[1]?.[0] ?? 0, offerVol2: offers[1]?.[1] ?? 0,
-    offerPrice3: offers[2]?.[0] ?? 0, offerVol3: offers[2]?.[1] ?? 0,
+    bidPrice1: bids[0]?.[0] ?? 0,
+    bidVol1: bids[0]?.[1] ?? 0,
+    bidPrice2: bids[1]?.[0] ?? 0,
+    bidVol2: bids[1]?.[1] ?? 0,
+    bidPrice3: bids[2]?.[0] ?? 0,
+    bidVol3: bids[2]?.[1] ?? 0,
+    offerPrice1: offers[0]?.[0] ?? 0,
+    offerVol1: offers[0]?.[1] ?? 0,
+    offerPrice2: offers[1]?.[0] ?? 0,
+    offerVol2: offers[1]?.[1] ?? 0,
+    offerPrice3: offers[2]?.[0] ?? 0,
+    offerVol3: offers[2]?.[1] ?? 0,
   };
 
   markInstrumentChanged(exchange, symbol, updatedFields);
@@ -301,137 +302,3 @@ export async function startPolling(io: Server) {
     }
   }, 5000);
 }
-
-// ==============================================================
-// ~~~ CODE CŨ — ASEAN WebSocket flow (comment lại để đọc) ~~~
-// ==============================================================
-
-/*
-// ====================== FIELD MAPPING (ASEAN WebSocket event "i") ======================
-// Khi ASEAN WS gửi event "i", data có các field viết tắt (SB, CP, CV...)
-// Ta map sang tên field đầy đủ để lưu cache và serve cho FE
-// Xác nhận từ log thực tế ngày 02/04/2026
-//
-// const WS_FIELD_MAP: Record<string, string> = {
-//   SB: "symbol",
-//   CP: "closePrice",     // Giá khớp hiện tại
-//   CV: "closeVol",       // KL khớp hiện tại
-//   CH: "change",         // Thay đổi giá tuyệt đối
-//   CHP: "changePercent",
-//   TT: "totalTrading",   // Tổng KL giao dịch trong ngày
-//   RE: "reference",      // Giá tham chiếu
-//   CE: "ceiling",        // Giá trần
-//   FL: "floor",          // Giá sàn
-//   HI: "high",           // Giá cao nhất ngày
-//   LO: "low",            // Giá thấp nhất ngày
-//   AP: "averagePrice",
-//   FB: "foreignBuy",
-//   FS: "foreignSell",
-//   FR: "foreignRemain",
-//   B1: "bidPrice1", V1: "bidVol1",  // Bên mua: B=giá, V=khối lượng
-//   B2: "bidPrice2", V2: "bidVol2",
-//   B3: "bidPrice3", V3: "bidVol3",
-//   S1: "offerPrice1", U1: "offerVol1",  // Bên bán: S=giá, U=khối lượng
-//   S2: "offerPrice2", U2: "offerVol2",
-//   S3: "offerPrice3", U3: "offerVol3",
-//   TB: "TOTAL_BID_QTTY",
-//   TO: "TOTAL_OFFER_QTTY",
-//   TV: "totalTradingValue",
-//   OP: "open",
-//   PMP: "PT_MATCH_PRICE",    // Giao dịch thỏa thuận
-//   PMQ: "PT_MATCH_QTTY",
-//   PTQ: "PT_TOTAL_TRADED_QTTY",
-//   PTV: "PT_TOTAL_TRADED_VALUE",
-//   P1: "priceOne",
-//   P2: "priceTwo",
-// };
-
-// ====================== XỬ LÝ EVENT "i" TỪ ASEAN ======================
-// ASEAN WS push event "i" liên tục mỗi khi có thay đổi giá/KL
-// data.a = "u" (update), data.d = mảng instruments đã thay đổi
-//
-// function handleInstrumentUpdate(data: InstrumentUpdateData) {
-//   if (data.a !== "u" || !Array.isArray(data.d)) return;
-//   for (const item of data.d) {
-//     const exchange = item.EX as string;
-//     const symbol = item.SB as string;
-//     if (!exchange || !symbol) continue;
-//     const cache = exchangeCache[exchange];
-//     if (!cache) continue;
-//     const existing = cache.get(symbol);
-//     if (!existing) continue;
-//     // Map từng field ngắn → field dài, ASEAN hay gửi số dạng string "8700.0" → parse float
-//     for (const [wsField, ourField] of Object.entries(WS_FIELD_MAP)) {
-//       if (wsField in item && wsField !== "SB") {
-//         const val = item[wsField];
-//         existing[ourField] = typeof val === "string" ? parseFloat(val as string) || val : val;
-//       }
-//     }
-//     changedInstruments[exchange]?.set(symbol, existing);
-//   }
-//   broadcastDeltaImmediately();
-// }
-
-// ====================== LOAD DATA CŨ TỪ ASEAN REST ======================
-// async function loadInitialData() {
-//   // Load VN30 / HNX30 symbol list
-//   const [vn30Res, hnx30Res] = await Promise.all([
-//     axios.get(`${BASE_URL}/datafeed/instruments/30`),
-//     axios.get(`${BASE_URL}/datafeed/instruments/HNX30`),
-//   ]);
-//   if (vn30Res.data.s === "ok") vn30Symbols = vn30Res.data.d;
-//   if (hnx30Res.data.s === "ok") hnx30Symbols = hnx30Res.data.d;
-//   // Load toàn bộ cổ phiếu từng sàn
-//   for (const exchange of EXCHANGES) {
-//     const res = await axios.get(`${BASE_URL}/datafeed/instruments`, { params: { exchange } });
-//     if (res.data.s === "ok" && Array.isArray(res.data.d)) {
-//       const cache = new Map<string, Record<string, unknown>>();
-//       for (const inst of res.data.d) { if (inst.symbol) cache.set(inst.symbol, inst); }
-//       exchangeCache[exchange] = cache;
-//     }
-//   }
-// }
-
-// ====================== KẾT NỐI ASEAN WEBSOCKET ======================
-// connectToAsean() từ aseanSocket.ts: giả lập browser, lấy cookies, mở WS
-//
-// connectToAsean({
-//   onInstrumentUpdate: handleInstrumentUpdate,
-//   onIndexUpdate: (data: any) => {
-//     // ASEAN gửi event "idx" với các field viết tắt:
-//     // MC = marketCode, MI = marketIndex, ICH = indexChange, IPC = indexPercentChange
-//     // TV = totalVolume, TVA = totalValue, IT = indexTime, MS = marketStatus
-//     // ADV/AV = số mã tăng/KL mã tăng, DE/DV = số mã giảm/KL mã giảm
-//     // NC/NCV = đứng giá / KL đứng
-//     // Lưu ý: AV và DV là KHỐI LƯỢNG, không phải số mã trần/sàn!
-//     if (!data?.a || data.a !== "u" || !Array.isArray(data.d)) return;
-//     data.d.forEach((item: any) => {
-//       const mc = item.MC || item.marketCode;
-//       if (!mc) return;
-//       indexCache[mc] = { ...indexCache[mc], ...item };
-//     });
-//     const mappedData = Object.values(indexCache)
-//       .filter((item: any) => item.MC)
-//       .map((item: any) => ({
-//         marketCode: item.MC,
-//         marketIndex: item.MI,
-//         indexChange: item.ICH,
-//         indexPercentChange: item.IPC,
-//         totalVolume: item.TV,
-//         totalValue: item.TVA,
-//         time: item.IT,
-//         status: item.MS,
-//         indexColor: parseFloat(item.ICH) > 0 ? "up" : parseFloat(item.ICH) < 0 ? "down" : "ref",
-//         advances: parseInt(item.ADV) || 0,
-//         advancesVolume: parseFloat(item.AV) || 0,
-//         noChange: parseInt(item.NC) || 0,
-//         noChangeVolume: parseFloat(item.NCV) || 0,
-//         declines: parseInt(item.DE) || 0,
-//         declinesVolume: parseFloat(item.DV) || 0,
-//       }));
-//     io.emit("indexsnaps_data", { s: "ok", d: mappedData });
-//   },
-//   onConnect: () => console.log("[ASEAN_WS] Đã kết nối"),
-//   onDisconnect: (reason) => console.log("[ASEAN_WS] Đã ngắt kết nối:", reason),
-// });
-*/
